@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# datalad_metalad documentation build configuration file, created by
+# datalad_debian documentation build configuration file, created by
 # sphinx-quickstart on Tue Oct 13 08:41:19 2015.
 #
 # This file is execfile()d with the current directory set to its
@@ -136,3 +136,8 @@ html_split_index = True
 
 # If true, links to the reST sources are added to the pages.
 html_show_sourcelink = False
+
+# smart quotes are incompatible with the RST flavor of the generated manpages
+# but see `smartquotes_action` for more fine-grained control, in case
+# some of this functionality is needed
+smartquotes = False
