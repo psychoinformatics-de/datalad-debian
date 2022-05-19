@@ -24,7 +24,7 @@
 
 
 # make repository clone cheap
-shallow_clone: true
+shallow_clone: false
 
 environment:
   DATALAD_TESTS_SSH: 1
