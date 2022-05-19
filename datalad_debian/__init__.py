@@ -8,7 +8,14 @@ __docformat__ = 'restructuredtext'
 command_suite = (
     # description of the command suite, displayed in cmdline help
     "DataLad for working with Debian packages",
-    []
+    [
+        (
+            'datalad_debian.new_distribution',
+            'NewDistribution',
+            'deb-new-distribution',
+            'deb_new_distribution',
+        ),
+    ]
 )
 
 from datalad import setup_package
