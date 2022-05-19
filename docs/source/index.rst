@@ -11,9 +11,8 @@ High-level API commands
 .. currentmodule:: datalad.api
 .. autosummary::
    :toctree: generated
-..
-   Note: this is a commented block, remove ".." and place command names here:
-   hello_cmd
+
+   deb_new_distribution
 
 
 Command line reference
@@ -21,9 +20,8 @@ Command line reference
 
 .. toctree::
    :maxdepth: 1
-..
-   Note: this is a commented block, remove ".." and place command names here
-   generated/man/datalad-hello-cmd
+
+   generated/man/datalad-deb-new-distribution
 
 
 Indices and tables
