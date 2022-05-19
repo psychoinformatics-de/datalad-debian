@@ -9,12 +9,11 @@
 import datetime
 import os
 
-from distutils.core import Command
-from distutils.errors import DistutilsOptionError
 from os.path import (
     dirname,
     join as opj,
 )
+from setuptools import Command, DistutilsOptionError
 from setuptools.config import read_configuration
 
 import versioneer
@@ -75,7 +74,7 @@ class BuildManPage(Command):
             mod_name, suite_name = self.cmdsuite.split(':')
             mod = __import__(mod_name, fromlist=mod_name.split('.'))
             suite = getattr(mod, suite_name)
-            self.cmdlist = [c[2] if len(c) > 2 else c[1].replace('_', '-')
+            self.cmdlist = [c[2] if len(c) > 2 else c[1].replace('_', '-').lower()
                             for c in suite[1]]
 
         self.announce('Writing man page(s) to %s' % self.manpath)
