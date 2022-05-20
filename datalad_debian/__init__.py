@@ -27,6 +27,12 @@ command_suite = (
             'deb-configure-builder',
             'deb_configure_builder',
         ),
+        (
+            'datalad_debian.bootstrap_builder',
+            'BootstrapBuilder',
+            'deb-bootstrap-builder',
+            'deb_bootstrap_builder',
+        ),
     ]
 )
 
