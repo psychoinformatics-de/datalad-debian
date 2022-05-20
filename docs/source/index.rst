@@ -14,6 +14,7 @@ High-level API commands
 
    deb_new_distribution
    deb_new_package
+   deb_configure_builder
 
 
 Command line reference
@@ -24,6 +25,7 @@ Command line reference
 
    generated/man/datalad-deb-new-distribution
    generated/man/datalad-deb-new-package
+   generated/man/datalad-deb-configure-builder
 
 
 Indices and tables
