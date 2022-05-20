@@ -1,0 +1,38 @@
+Bootstrap:docker
+From:{dockerbase}
+
+%post
+    apt-get -y update
+    apt-get -y install --no-install-recommends build-essential devscripts eatmydata equivs
+    # remove everything but the lock file from
+    # /var/cache/apt/archives/ and /var/cache/apt/archives/partial/
+    apt-get clean
+    # builder setup relies on this particular directory to exist inside the container
+    mkdir /pkg
+
+%runscript
+    # we run with -x to get verbose output suitable for a comprehensive
+    # log file
+    set -e -u -x
+    dsc=$1
+    # somehow --containall causes 755 by default
+    chmod 777 /tmp
+    # update the package list, necessary to get the latest build-dependency
+    # version
+    eatmydata apt-get update -y
+    # update the base environment. needed for rolling releases to stay
+    # up-to-date
+    eatmydata apt-get upgrade -y
+    # all building will take place inside the container
+    # maybe add option to do it on the host FS?
+    mkdir -p /tmp/build
+    # ingest the source package into a defined location in the container env
+    dcmd cp "$dsc" /tmp/build
+    # extract the source package
+    (cd /tmp/build && dpkg-source -x *.dsc source)
+    # install the declared build-dependencies
+    (cd /tmp && mk-build-deps -t 'eatmydata apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends -y' -i -r /tmp/build/source/debian/control)
+    # build the binary package(s)
+    (cd /tmp/build/source && debuild -uc -us -b)
+    # deposit the results
+    dcmd cp /tmp/build/*changes /pkg
