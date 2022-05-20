@@ -16,6 +16,7 @@ High-level API commands
    deb_configure_builder
    deb_bootstrap_builder
    deb_new_package
+   deb_build_package
 
 
 Command line reference
@@ -28,6 +29,7 @@ Command line reference
    generated/man/datalad-deb-configure-builder
    generated/man/datalad-deb-bootstrap-builder
    generated/man/datalad-deb-new-package
+   generated/man/datalad-deb-build-package
 
 
 Indices and tables
