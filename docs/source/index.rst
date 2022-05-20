@@ -13,6 +13,7 @@ High-level API commands
    :toctree: generated
 
    deb_new_distribution
+   deb_new_package
 
 
 Command line reference
@@ -22,6 +23,7 @@ Command line reference
    :maxdepth: 1
 
    generated/man/datalad-deb-new-distribution
+   generated/man/datalad-deb-new-package
 
 
 Indices and tables

@@ -15,6 +15,12 @@ command_suite = (
             'deb-new-distribution',
             'deb_new_distribution',
         ),
+        (
+            'datalad_debian.new_package',
+            'NewPackage',
+            'deb-new-package',
+            'deb_new_package',
+        ),
     ]
 )
 
