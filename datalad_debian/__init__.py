@@ -22,6 +22,12 @@ command_suite = (
             'deb_new_package',
         ),
         (
+            'datalad_debian.build_package',
+            'BuildPackage',
+            'deb-build-package',
+            'deb_build_package',
+        ),
+        (
             'datalad_debian.configure_builder',
             'ConfigureBuilder',
             'deb-configure-builder',
