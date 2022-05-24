@@ -145,6 +145,7 @@ def normalize_specs(specs):
             (tuple(s.split('=', 1)))
             for s in specs
         ]
+    missing = None
     if isinstance(specs, list):
         missing = [i[0] for i in specs if len(i) == 1]
     if missing:

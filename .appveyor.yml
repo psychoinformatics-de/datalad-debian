@@ -35,7 +35,7 @@ environment:
     - ID: Ubu20
       DTS: datalad_debian
       APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
-      INSTALL_SYSPKGS: python3-virtualenv
+      INSTALL_SYSPKGS: python3-virtualenv devscripts moreutils
       # system git-annex is way too old, use better one
       INSTALL_GITANNEX: git-annex -m deb-url --url http://snapshot.debian.org/archive/debian/20210906T204127Z/pool/main/g/git-annex/git-annex_8.20210903-1_amd64.deb
       CODECOV_BINARY: https://uploader.codecov.io/latest/linux/codecov
@@ -61,6 +61,8 @@ init:
   - git config --global user.name "Appveyor Almighty"
   - sh: mkdir ~/DLTMP
   - sh: export TMPDIR=~/DLTMP
+  # Ubuntu 20.04 does not have singularity, get a recent one from upstream
+  - sh: (cd ~/DLTMP && wget https://github.com/sylabs/singularity/releases/download/v3.10.0/singularity-ce_3.10.0-focal_amd64.deb && sudo dpkg -i singularity*deb)
 
 install:
   # If a particular Python version is requested, use env setup (using the
