@@ -71,7 +71,6 @@ class ConfigureBuilder(Interface):
         # TODO check if this is an actual builder dataset,
         # and give advice if not
         spec = normalize_specs(spec)
-        print(spec)
 
         tmpl_path = None
         for tp in (
