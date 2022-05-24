@@ -4,7 +4,7 @@ From:{dockerbase}
 %post
 
 apt-get -y update
-apt-get -y install --no-install-recommends build-essential devscripts eatmydata equivs moreutils
+apt-get -y install --no-install-recommends build-essential devscripts eatmydata equivs moreutils lintian
 # remove everything but the lock file from
 # /var/cache/apt/archives/ and /var/cache/apt/archives/partial/
 apt-get clean
@@ -36,7 +36,9 @@ echo -e "\n#\n# Installing build-dependencies: \$(date -u --iso-8601=seconds)\n#
 (cd /tmp && mk-build-deps -t 'eatmydata apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends -y' -i -r /tmp/build/source/debian/control)
 # build the binary package(s)
 echo -e "\n#\n# Build starting: \$(date -u --iso-8601=seconds)\n#\n"
-(cd /tmp/build/source && debuild -uc -us -b)
+# we need lintian's allow-root, because we are running as root inside singularity's
+# fakeroot environment
+(cd /tmp/build/source && debuild -uc -us -b --lintian-opts --allow-root)
 # deposit the results
 echo -e "\n#\n# Deposit build results: \$(date -u --iso-8601=seconds)\n#\n"
 dcmd cp /tmp/build/*changes /pkg
