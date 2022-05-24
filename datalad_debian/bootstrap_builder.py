@@ -72,7 +72,7 @@ class BootstrapBuilder(Interface):
         yield from builder_ds.run(
             # TODO allow for other means of privilege escalation
             # TODO allow for other means to bootstrap
-            "sudo singularity build {outputs} {inputs}",
+            "sudo singularity build --force {outputs} {inputs}",
             inputs=[str(recipe.relative_to(builder_ds.pathobj))],
             outputs=[str(buildenv)],
             result_renderer='disabled',
