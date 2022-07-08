@@ -1,5 +1,5 @@
 from pathlib import Path
-from datalad.tests.utils import (
+from datalad.tests.utils_pytest import (
     with_tempfile,
 )
 from datalad.api import (
@@ -8,7 +8,7 @@ from datalad.api import (
 
 
 @with_tempfile
-def test_from_scratch(wdir):
+def test_from_scratch(wdir=None):
     da = {'result_renderer': 'disabled'}
     dist = Dataset(wdir)
     dist.deb_new_distribution(**da)

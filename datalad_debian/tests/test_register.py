@@ -1,4 +1,4 @@
-from datalad.tests.utils import (
+from datalad.tests.utils_pytest import (
     assert_result_count,
     SkipTest,
 )
