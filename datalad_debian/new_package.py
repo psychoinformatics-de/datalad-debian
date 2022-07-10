@@ -112,6 +112,13 @@ class NewPackage(Interface):
             if k.startswith('gitmodule_')
         }
         builder_subm_props['path'] = 'builder'
+        if builder_subm_props['url'] == './builder':
+            # this cannot possibly resolve, point to the would-be location
+            # of the builder dataset, assuming we are in a monolithic
+            # checkout of the distribution dataset. This is just a better
+            # guess. For robust behavior, the distribution dataset should
+            # really provide a proper URL for the builder dataset.
+            builder_subm_props['url'] = '../../builder'
         # and write them to .gitmodules
         # TODO this will presently kill any other content
         # in case of a --force run; could be made more convenient
