@@ -23,12 +23,12 @@ lgr = logging.getLogger('datalad.debian.add_distribution')
 
 @build_doc
 class AddDistribution(Interface):
-    """Create a distribution dataset to an package repository dataset
+    """Add a distribution dataset to a Debian archive repository dataset
     """
     _params_ = dict(
         dataset=Parameter(
             args=("-d", "--dataset"),
-            doc="""specify the package repository dataset to add the
+            doc="""specify the Debian archive repository dataset to add the
             distribution to""",
             constraints=EnsureDataset() | EnsureNone()),
         source=Parameter(
@@ -40,7 +40,8 @@ class AddDistribution(Interface):
         name=Parameter(
             args=('name',),
             metavar='NAME',
-            doc="""name to add the distribution dataset under""",
+            doc="""name to add the distribution dataset under
+            (directory distributions/<name>)""",
             constraints=EnsureStr() | EnsureNone()),
     )
 
