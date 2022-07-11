@@ -2,6 +2,16 @@ DataLad extension for working with Debian packages and package repositories
 ***************************************************************************
 
 
+Overview
+========
+
+.. toctree::
+   :maxdepth: 1
+
+   concepts
+
+
+
 API
 ===
   
