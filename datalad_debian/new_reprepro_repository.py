@@ -96,7 +96,7 @@ class NewRepreproRepository(Interface):
 
         # and the same for the debian/ subdataset (the actual package archive)
         for res in reprepro_ds.create(
-            path='debian',
+            path='www',
             force=force,
             # critical, otherwise create() throws any errors away
             # https://github.com/datalad/datalad/issues/6695

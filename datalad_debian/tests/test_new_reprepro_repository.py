@@ -18,6 +18,6 @@ def test_new_reprepro_repository(path=None):
         **ckwa)
     assert_in_results(
         res,
-        path=str(pathobj / 'debian'),
+        path=str(pathobj / 'www'),
         type='dataset',
     )
