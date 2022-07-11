@@ -41,16 +41,17 @@ class BootstrapBuilder(Interface):
     The following directory tree illustrates this.
     The configured builder takes the form of a Singularity recipe here.
 
-    bullseye                <- distribution dataset
-    ├── builder             <- builder subdataset
-    │   ├── envs
-    │   │   ├── README.md
-    │       └── singularity-amd64.sif   <- bootstrapped build environment
-    │   └── recipes
-    │       ├── README.md
-    │       └── singularity-any     <- builder configuration
+        |    bullseye                <- distribution dataset
+        |    ├── builder             <- builder subdataset
+        |    │   ├── envs
+        |    │   │   ├── README.md
+        |    │   │   └── singularity-amd64.sif   <- bootstrapped build environment
+        |    │   └── recipes
+        |    │       ├── README.md
+        |    │       └── singularity-any     <- builder configuration
 
     """
+
     _params_ = dict(
         dataset=Parameter(
             args=("-d", "--dataset"),

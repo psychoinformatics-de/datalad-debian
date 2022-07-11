@@ -37,18 +37,20 @@ class ConfigureBuilder(Interface):
     The following directory tree illustrates this.
     The configured builder takes the form of a Singularity recipe here.
 
-    bullseye                <- distribution dataset
-    ├── builder             <- builder subdataset
-    │   ├── envs
-    │   │   ├── README.md
-    │   └── recipes
-    │       ├── README.md
-    │       └── singularity-any     <- builder configuration
+        | bullseye                <- distribution dataset
+        |    ├── builder             <- builder subdataset
+        |    │   ├── envs
+        |    │   │   └──  README.md
+        |    │   └── recipes
+        |    │       ├── README.md
+        |    │       └── singularity-any     <- builder configuration
 
     Currently supported templates are
+
     - 'singularity-default': A Singularity recipe requiring the spec
       'dockerbase' with a value for the container's base image
     """
+
     _params_ = dict(
         dataset=Parameter(
             args=("-d", "--dataset"),
