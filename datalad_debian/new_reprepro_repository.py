@@ -154,7 +154,7 @@ conf_opts_tmpl = """\
 # we want repropro to ask for a key passphrase and not just die
 ask-passphrase
 # tell reprepro where the repository root is (root of the subdataset)
-outdir +b/debian
+outdir +b/www
 """
 
 dist_config_tmpl = """\
