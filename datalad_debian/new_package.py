@@ -60,8 +60,25 @@ class NewPackage(Interface):
             on_failure='ignore',
         )
         # we must have one result for the must-have builder dataset
-        # TODO error nicely if not
-        assert isinstance(builder_info, dict)
+        if builder_info is None:
+            yield dict(
+                action='deb_new_package',
+                status='error',
+                path=dist_ds,
+                message=(
+                    "Failed to find a builder subdataset underneath %s. "
+                    "Make sure to run the command in a distribution "
+                    "superdataset, with a builder configured and created "
+                    "by datalad deb-configure-builder and datalad "
+                    "deb-bootstrap-builder.", dist_ds
+                )
+            )
+            return
+        # unsure if this can ever happen, but if it does, report our confusion
+        if not isinstance(builder_info, dict):
+            raise RuntimeError("Internal error: It seems as if multiple "
+                               "builder subdatasets were found, or they were "
+                               "reported in an unexpected structure.")
 
         # we put all of them in a dedicated directory to have an
         # independent namespace for them that does not conflict with other
