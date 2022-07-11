@@ -39,6 +39,12 @@ command_suite = (
             'deb-bootstrap-builder',
             'deb_bootstrap_builder',
         ),
+        (
+            'datalad_debian.new_reprepro_repository',
+            'NewRepreproRepository',
+            'deb-new-reprepro-repository',
+            'deb_new_reprepro_repository',
+        ),
     ]
 )
 
