@@ -45,6 +45,12 @@ command_suite = (
             'deb-new-reprepro-repository',
             'deb_new_reprepro_repository',
         ),
+        (
+            'datalad_debian.add_distribution',
+            'AddDistribution',
+            'deb-add-distribution',
+            'deb_add_distribution',
+        ),
     ]
 )
 
