@@ -75,6 +75,7 @@ class BootstrapBuilder(Interface):
             "sudo singularity build --force {outputs} {inputs}",
             inputs=[str(recipe.relative_to(builder_ds.pathobj))],
             outputs=[str(buildenv)],
+            message=f"Bootstrap builder '{buildenv_name}'",
             result_renderer='disabled',
             return_type='generator',
             # give control flow to caller
