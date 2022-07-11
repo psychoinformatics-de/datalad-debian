@@ -88,10 +88,9 @@ class NewDistribution(Interface):
             return
 
         # ensure the builder dataset is where it needs to be
-        yield from dist_ds.create(
+        for res in dist_ds.create(
             path='builder',
             force=force,
-            cfg_proc='debianbuilder',
             # critical, otherwise create() throws any errors away
             # https://github.com/datalad/datalad/issues/6695
             result_filter=None,
@@ -100,4 +99,52 @@ class NewDistribution(Interface):
             return_type='generator',
             # we leave the flow-control to the caller
             on_failure='ignore',
-        )
+        ):
+            yield res
+            if result_matches(res,
+                              action='create', type='dataset',
+                              status=('ok', 'notneeded')):
+                # configure the debian builder
+                builder_ds = require_dataset(res['path'])
+                repo = builder_ds.repo
+                if not builder_ds:
+                    lgr.debug('Builder dataset did not materialize, stopping')
+                    return
+                to_save = []
+
+                for f, c in (
+                        (builder_ds.pathobj / 'recipes' / 'README.md',
+                         "This directory contains the recipes for all build pipeline images."),
+                        (builder_ds.pathobj / 'envs' / 'README.md',
+                         "This directory contains build pipeline images."),
+                ):
+                    if not f.exists():
+                        f.parent.mkdir(exist_ok=True)
+                        f.write_text(c)
+                        to_save.append(f)
+
+                for f, a in (
+                        # all recipes go into Git
+                        (repo.pathobj / 'recipes' / '.gitattributes',
+                         [('*', {'annex.largefiles': 'nothing'})]),
+                        (repo.pathobj / 'envs' / '.gitattributes',
+                         [('*.md', {'annex.largefiles': 'nothing'})]),
+                ):
+                    if not f.exists():
+                        repo.set_gitattributes(a, f)
+                        to_save.append(f)
+
+                # ignore a cache/ dir, may not be used by all setups,
+                # but adds a little convenience for those who do
+                gitignore = repo.pathobj / '.gitignore'
+                if not gitignore.exists():
+                    gitignore.write_text("cache\n")
+                    to_save.append(gitignore)
+
+                yield from builder_ds.save(
+                    path=to_save,
+                    message='Debian builder dataset setup',
+                    result_xfm=None,
+                    return_type='generator',
+                    result_renderer='disabled',
+                )
