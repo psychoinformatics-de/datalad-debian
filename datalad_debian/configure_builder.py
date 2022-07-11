@@ -25,12 +25,35 @@ lgr = logging.getLogger('datalad.debian.configure_builder')
 
 @build_doc
 class ConfigureBuilder(Interface):
-    """Create a new package dataset
+    """Configure a package build environment
+
+    A builder is a (containerized) build environment used to build binary Debian
+    packages from source files. This command is typically run in a distribution
+    dataset and configures a builder recipe based on a template and
+    user-specified values for the template's placeholders.
+    The resulting recipe will be placed in the 'recipes/' directory in the
+    'builder/' subdataset of a distribution dataset.
+
+    The following directory tree illustrates this.
+    The configured builder takes the form of a Singularity recipe here.
+
+    bullseye                <- distribution dataset
+    ├── builder             <- builder subdataset
+    │   ├── envs
+    │   │   ├── README.md
+    │   └── recipes
+    │       ├── README.md
+    │       └── singularity-any     <- builder configuration
+
+    Currently supported templates are
+    - 'singularity-default': A Singularity recipe requiring the spec
+      'dockerbase' with a value for the container's base image
     """
     _params_ = dict(
         dataset=Parameter(
             args=("-d", "--dataset"),
-            doc="""specify a distribution dataset to add the package to""",
+            doc="""Specify a builder dataset in which an environment will be
+            defined""",
             constraints=EnsureDataset() | EnsureNone()),
         force=Parameter(
             args=("-f", "--force",),
@@ -47,10 +70,17 @@ class ConfigureBuilder(Interface):
             args=('spec',),
             metavar='property=value',
             nargs='*',
-            doc="""Stuff to complete the template"""),
+            doc="""Values to complete placeholders in the specified
+             template"""),
     )
 
-    _examples_ = []
+    _examples_ = [
+        dict(text="Configure the default Singularity recipe in the builder "
+                  "subdataset, from a distribution superdataset",
+             code_cmd="datalad deb-configure-builder -d builder dockerbase=debian:bullseye",
+             code_py="deb_configure_builder(dataset='builder', "
+                     "spec={'dockerbase':'debian:bullseye'})")
+    ]
 
     @staticmethod
     @datasetmethod(name='deb_configure_builder')
