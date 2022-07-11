@@ -119,9 +119,10 @@ def _setup_reprepro_ds(ds):
     repo = ds.repo
     # destination for the reprepro config
     (ds.pathobj / 'conf').mkdir()
-    # we want the config to be in git
+    # we want the config and documentation to be in git
     repo.call_annex([
-        'config', '--set', 'annex.largefiles', 'exclude=conf/*'])
+        'config', '--set', 'annex.largefiles',
+        'exclude=conf/* and exclude=README/* and exclude=*/README'])
     # establish basic config for repository and reprepro behavior
     (ds.pathobj / 'conf' / 'options').write_text(conf_opts_tmpl)
     # the DB files written and read by reprepro need special handling
