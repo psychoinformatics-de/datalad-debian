@@ -132,8 +132,11 @@ def _setup_reprepro_ds(ds):
     repo.call_annex([
         'config', '--set', 'annex.addunlocked', 'include=db/*'])
 
+    dist_readme = ds.pathobj / 'distributions' / 'README'
+    dist_readme.parent.mkdir(parents=True, exist_ok=True)
+    dist_readme.write_text(dist_subds_readme)
     yield from ds.save(
-        path=['conf', 'repo'],
+        path=['conf', 'repo', dist_readme],
         message='Basic reprepro setup',
         **ckwa
     )
@@ -162,4 +165,9 @@ Codename: <distribution codename>
 Components: main
 Architectures: amd64
 SignWith: <signing key ID>
+"""
+
+dist_subds_readme = """\
+Distribution datasets with packages to be included in the package
+repository are placed into this directory as subdatasets.
 """
