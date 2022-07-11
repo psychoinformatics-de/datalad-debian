@@ -18,6 +18,9 @@ from datalad.support.constraints import (
 )
 from datalad.support.param import Parameter
 
+from datalad_debian.utils import result_matches
+
+
 lgr = logging.getLogger('datalad.debian.new_distribution')
 
 
@@ -98,19 +101,3 @@ class NewDistribution(Interface):
             # we leave the flow-control to the caller
             on_failure='ignore',
         )
-
-
-def result_matches(res, **kwargs):
-    # special internal type that could not possibly come from outside
-    # which we can use to streamline our tests here
-    class NotHere():
-        pass
-
-    for k, v in kwargs.items():
-        if not isinstance(v, (list, tuple)):
-            # normalize for "is in" test
-            v = (v,)
-        if res.get(k, NotHere) not in v:
-            # either `k` was not in `res, or the value does not match
-            return False
-    return True
