@@ -132,11 +132,33 @@ class BuildPackage(Interface):
                 pkg_ds.pathobj / 'builder' / 'cache' / 'var' / 'lib' / 'apt'):
             p.mkdir(exist_ok=True, parents=True)
 
+        # users might have forgotten to bootstrap the builder. Downstream, this
+        # would result in no containers being found. We fail early & informative
+        cname = f"builder/{buildenv_name}"
+        known_containers = pkg_ds.containers_list(
+            recursive=True,
+            result_renderer='disabled',
+            return_type='list',
+            on_failure='ignore'
+        )
+        if cname not in [c['name'] for c in known_containers]:
+            yield dict(
+                action='deb_build_package',
+                status='impossible',
+                path='pkg_ds',
+                message=(
+                    "Couldn't find the required builder container %s. Forgot to "
+                    "bootrap it?", cname
+                )
+
+            )
+            return
+
         yield from pkg_ds.containers_run(
             # needs to go in relative, because it is interpreted inside the
             # (containerized) buildenv
             dsc.relative_to(pkg_ds.pathobj) if dsc.is_absolute() else dsc,
-            container_name=f"builder/{buildenv_name}",
+            container_name=cname,
             message=f"Build {dsc.name} for {binarch}",
             inputs=srcpkg_files,
             # we do not need to declare outputs,
