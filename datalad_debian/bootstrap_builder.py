@@ -34,7 +34,7 @@ class BootstrapBuilder(Interface):
     a Singularity recipe).
 
     The execution of this command might require administrative privileges and
-    could prompt for a sudo password, for example in order to build a
+    could prompt for a sudo password, for example to build a
     Singularity image. The resulting bootstrapped build environment will be
     placed inside of a 'envs/' subdirectory of a 'builder/' dataset.
 
@@ -55,7 +55,7 @@ class BootstrapBuilder(Interface):
     _params_ = dict(
         dataset=Parameter(
             args=("-d", "--dataset"),
-            doc="""specify a builder dataset with a build environment
+            doc="""specify a builder dataset that contains a build environment
             configuration""",
             constraints=EnsureDataset() | EnsureNone()),
     )

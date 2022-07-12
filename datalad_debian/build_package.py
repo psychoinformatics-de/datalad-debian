@@ -52,7 +52,7 @@ class BuildPackage(Interface):
             constraints=EnsureStr() | EnsureNone()),
         update_builder=Parameter(
             args=("--update-builder",),
-            doc="""Update the builder subdataset from its source before package
+            doc="""Update the builder subdataset from its origin before package
             build""",
             action='store_true'),
     )

@@ -72,13 +72,12 @@ class ConfigureBuilder(Interface):
             args=('spec',),
             metavar='property=value',
             nargs='*',
-            doc="""Values to complete placeholders in the specified
-             template"""),
+            doc="""Values to replace placeholders in the specified template"""),
     )
 
     _examples_ = [
         dict(text="Configure the default Singularity recipe in the builder "
-                  "subdataset, from a distribution superdataset",
+                  "subdataset, executed from a distribution superdataset",
              code_cmd="datalad deb-configure-builder -d builder dockerbase=debian:bullseye",
              code_py="deb_configure_builder(dataset='builder', "
                      "spec={'dockerbase':'debian:bullseye'})")
