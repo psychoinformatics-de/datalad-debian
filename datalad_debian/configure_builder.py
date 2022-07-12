@@ -15,6 +15,7 @@ from datalad.interface.utils import (
     eval_results,
 )
 from datalad.support.constraints import (
+    EnsureChoice,
     EnsureNone,
     EnsureStr,
 )
@@ -43,6 +44,18 @@ class ConfigureBuilder(Interface):
             doc="""Builder recipe template. This is a text file for placeholders
             in Python string formating syntax""",
             constraints=EnsureStr() | EnsureNone()),
+        cfgtype=Parameter(
+            args=('--cfgtype',),
+            default='singularity',
+            doc="""Type of build environment. Currently supported: 'singularity'
+            """,
+            constraints=EnsureChoice('singularity')),
+        cfgarch=Parameter(
+            args=('--cfgarch',),
+            default='any',
+            doc="""Type of architecture supported by the build environment.
+            Currently supported: 'any'""",
+            constraints=EnsureChoice('any')),
         spec=Parameter(
             args=('spec',),
             metavar='property=value',
@@ -56,15 +69,9 @@ class ConfigureBuilder(Interface):
     @datasetmethod(name='deb_configure_builder')
     @eval_results
     def __call__(*, dataset=None, force=False,
-                 template='default', spec=None,
-    ):
-        # TODO this could later by promoted to an option to support more than
-        # singularity
-        cfgtype = 'singularity'
-
-        # TODO could later be promoted to an option to support
-        # CPU architecture-specific configuration
-        cfgarch = 'any'
+                 template='default', cfgtype='singularity',
+                 cfgarch='any', spec=None,
+                 ):
 
         builder_ds = require_dataset(dataset)
 
