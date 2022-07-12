@@ -27,12 +27,12 @@ lgr = logging.getLogger('datalad.debian.configure_builder')
 class ConfigureBuilder(Interface):
     """Configure a package build environment
 
-    A builder is a (containerized) build environment used to build binary Debian
-    packages from source files. This command is typically run in a distribution
-    dataset and configures a builder recipe based on a template and
-    user-specified values for the template's placeholders.
-    The resulting recipe will be placed in the 'recipes/' directory in the
-    'builder/' subdataset of a distribution dataset.
+    A builder is a (containerized) build environment used to build binary
+    Debian packages from Debian source packages. This command is typically run
+    on the builder dataset in a distribution dataset and configures a builder
+    recipe based on a template and user-specified values for the template's
+    placeholders.  The resulting recipe will be placed in the 'recipes/'
+    directory of the builder dataset.
 
     The following directory tree illustrates this.
     The configured builder takes the form of a Singularity recipe here.
