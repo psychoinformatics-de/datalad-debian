@@ -86,7 +86,13 @@ class BootstrapBuilder(Interface):
         dict(text="Bootstrap a configured build environment in a builder "
                   "subdataset, from a distribution dataset",
              code_cmd="datalad deb-bootstrap-builder -d builder",
-             code_py="deb_bootstrap_builder(dataset='builder')")
+             code_py="deb_bootstrap_builder(dataset='builder')"),
+        dict(text="Bootstrap a configured nonfree build environment in a "
+                  "builder subdataset, from a distribution dataset",
+             code_cmd="datalad deb-bootstrap-builder --template nonfree "
+                      "-d builder",
+             code_py="deb_bootstrap_builder(dataset='builder', "
+                     "template='nonfree')")
     ]
 
     @staticmethod

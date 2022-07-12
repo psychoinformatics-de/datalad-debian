@@ -82,7 +82,12 @@ class BuildPackage(Interface):
                   "file",
              code_cmd="datalad deb-build-package hello_2.10-2.dsc",
              code_py="deb_build_package('hello_2.10-2.dsc')"
-        )
+        ),
+        dict(text="Build a binary package from a Debian package's source .dsc "
+                  "file with an environment suitable for nonfree packages",
+             code_cmd="datalad deb-build-package hello_2.10-2.dsc",
+             code_py="deb_build_package('hello_2.10-2.dsc') --template nonfree"
+             )
     ]
 
     @staticmethod

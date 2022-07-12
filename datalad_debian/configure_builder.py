@@ -93,7 +93,15 @@ class ConfigureBuilder(Interface):
                   "subdataset, executed from a distribution superdataset",
              code_cmd="datalad deb-configure-builder -d builder dockerbase=debian:bullseye",
              code_py="deb_configure_builder(dataset='builder', "
-                     "spec={'dockerbase':'debian:bullseye'})")
+                     "spec={'dockerbase':'debian:bullseye'})"),
+        dict(text="Configure the nonfree Singularity recipe in the builder "
+                  "subdataset, executed from a distribution superdataset",
+             code_cmd="datalad deb-configure-builder -d builder --template "
+                      "nonfree dockerbase=debian:bullseye",
+             code_py="deb_configure_builder(dataset='builder', "
+                     "template='nonfree' spec={'dockerbase':'debian:bullseye'})"
+             ),
+
     ]
 
     @staticmethod
