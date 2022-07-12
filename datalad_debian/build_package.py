@@ -179,7 +179,7 @@ class BuildPackage(Interface):
             yield dict(
                 action='deb_build_package',
                 status='impossible',
-                path='pkg_ds',
+                path=pkg_ds,
                 message=(
                     "Couldn't find the required builder container %s. Forgot to "
                     "bootrap it, or supply non-default template/cfgtype name?",
