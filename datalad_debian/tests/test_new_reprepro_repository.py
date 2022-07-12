@@ -27,6 +27,8 @@ def test_new_reprepro_repository(path=None):
         path=str(pathobj / 'archive' / 'www'),
         type='dataset',
     )
+    # Main README explains the layout & references datalad-debian
+    assert (pathobj / 'archive' / 'README').exists()
     # README points out where distributions need to go
     assert (pathobj / 'archive' / 'distributions' / 'README').exists()
     # config placeholder for reprepro-recognized distributions is

@@ -122,7 +122,7 @@ def _setup_reprepro_ds(ds):
     # we want the config and documentation to be in git
     repo.call_annex([
         'config', '--set', 'annex.largefiles',
-        'exclude=conf/* and exclude=README/* and exclude=*/README'])
+        'exclude=conf/* and exclude=README and exclude=*/README'])
     # establish basic config for repository and reprepro behavior
     (ds.pathobj / 'conf' / 'options').write_text(conf_opts_tmpl)
     # the DB files written and read by reprepro need special handling
@@ -133,11 +133,13 @@ def _setup_reprepro_ds(ds):
     repo.call_annex([
         'config', '--set', 'annex.addunlocked', 'include=db/*'])
 
+    main_readme = ds.pathobj / 'README'
+    main_readme.write_text(superdataset_readme)
     dist_readme = ds.pathobj / 'distributions' / 'README'
     dist_readme.parent.mkdir(parents=True, exist_ok=True)
     dist_readme.write_text(dist_subds_readme)
     yield from ds.save(
-        path=['conf', 'repo', dist_readme],
+        path=['conf', main_readme, dist_readme],
         message='Basic reprepro setup',
         **ckwa
     )
@@ -171,4 +173,24 @@ SignWith: <signing key ID>
 dist_subds_readme = """\
 Distribution datasets with packages to be included in the package
 repository are placed into this directory as subdatasets.
+"""
+
+superdataset_readme = """\
+This package repository dataset has been created with datalad-debian
+[1], a DataLad [2] extension for creating and disseminating Debian
+packages.
+
+By default, it will contain the following folders:
+- conf: a place for configuration files;
+- distributions: a place to install distribution datasets containing
+  packages to be included in the package repository;
+- www: a subdataset with the actual Debian package archive which can
+  be populated using reprepro [3] and deployed on a webserver.
+
+The datalad-debian extension provides deb-add-distribution and
+deb-update-reprepro-repository methods to maintain this dataset.
+
+[1] https://github.com/psychoinformatics-de/datalad-debian
+[2] https://datalad.org
+[3] https://wiki.debian.org/DebianRepository/SetupWithReprepro
 """
