@@ -28,15 +28,44 @@ lgr = logging.getLogger('datalad.debian.bootstrap_builder')
 @build_doc
 class BootstrapBuilder(Interface):
     """Bootstrap a build environment
+
+    This command bootstraps a (containerized) build environment (such as a
+    Singularity container) based on an existing builder configuration (such as
+    a Singularity recipe).
+
+    The execution of this command might require administrative privileges and
+    could prompt for a sudo password, for example to build a
+    Singularity image. The resulting bootstrapped build environment will be
+    placed inside of a 'envs/' subdirectory of a 'builder/' dataset.
+
+    The following directory tree illustrates this.
+    The configured builder takes the form of a Singularity recipe here.
+
+        |    bullseye                <- distribution dataset
+        |    ├── builder             <- builder subdataset
+        |    │   ├── envs
+        |    │   │   ├── README.md
+        |    │   │   └── singularity-amd64.sif   <- bootstrapped build environment
+        |    │   └── recipes
+        |    │       ├── README.md
+        |    │       └── singularity-any     <- builder configuration
+
     """
+
     _params_ = dict(
         dataset=Parameter(
             args=("-d", "--dataset"),
-            doc="""specify a distribution dataset to add the package to""",
+            doc="""specify a builder dataset that contains a build environment
+            configuration""",
             constraints=EnsureDataset() | EnsureNone()),
     )
 
-    _examples_ = []
+    _examples_ = [
+        dict(text="Bootstrap a configured build environment in a builder "
+                  "subdataset, from a distribution dataset",
+             code_cmd="datalad deb-bootstrap-builder -d builder",
+             code_py="deb_bootstrap_builder(dataset='builder')")
+    ]
 
     @staticmethod
     @datasetmethod(name='deb_bootstrap_builder')

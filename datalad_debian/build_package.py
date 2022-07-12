@@ -29,24 +29,41 @@ lgr = logging.getLogger('datalad.debian.build_package')
 @build_doc
 class BuildPackage(Interface):
     """Build binary packages
+
+    Perform a provenance tracked build of a binary Debian package from a .dsc
+    file in a package dataset.
+    The command relies on a (containerized) build environment within a package's
+    'builder' subdataset. The 'builder' subdataset can optionally be updated
+    beforehand.
+
+    Beyond binary .deb files, this command creates a .changes, a .buildinfo,
+    and a logs/.txt file with build metadata and provenance. All resulting
+    files are placed into the root of the package dataset.
     """
     _params_ = dict(
         dataset=Parameter(
             args=("-d", "--dataset"),
-            doc="""ahyeah! package dataset!""",
+            doc="""Specify the package dataset of the to-be-built package""",
             constraints=EnsureDataset() | EnsureNone()),
         dsc=Parameter(
             args=('dsc',),
             metavar='DSC',
-            doc="""damn!""",
+            doc="""Specify the .dsc source file to build from""",
             constraints=EnsureStr() | EnsureNone()),
         update_builder=Parameter(
             args=("--update-builder",),
-            doc="""why not?!""",
+            doc="""Update the builder subdataset from its origin before package
+            build""",
             action='store_true'),
     )
 
-    _examples_ = []
+    _examples_ = [
+        dict(text="Build a binary package from a Debian package's source .dsc "
+                  "file",
+             code_cmd="datalad deb-build-package hello_2.10-2.dsc",
+             code_py="deb_build_package('hello_2.10-2.dsc')"
+        )
+    ]
 
     @staticmethod
     @datasetmethod(name='deb_build_package')
