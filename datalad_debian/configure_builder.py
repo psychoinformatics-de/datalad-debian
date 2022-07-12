@@ -23,6 +23,11 @@ from datalad.support.param import Parameter
 lgr = logging.getLogger('datalad.debian.configure_builder')
 
 
+spec_defaults = {
+    'debian_archive_sections': 'main',
+}
+
+
 @build_doc
 class ConfigureBuilder(Interface):
     """Configure a package build environment
@@ -47,8 +52,15 @@ class ConfigureBuilder(Interface):
 
     Currently supported templates are
 
-    - 'default': A Singularity recipe requiring the spec
-      'dockerbase' with a value for the container's base image
+    - 'default': A Singularity recipe.
+
+      Required parameters:
+      - 'dockerbase' with a value for the container's base image
+
+      Optional parameters:
+      - 'debian_archive_sections' which sections of the Debian package archive
+        to enable for APT in the build environment. To enable all sections
+        set to 'main contrib non-free'. Default: 'main'
     """
 
     _params_ = dict(
@@ -101,7 +113,14 @@ class ConfigureBuilder(Interface):
 
         # TODO check if this is an actual builder dataset,
         # and give advice if not
-        spec = normalize_specs(spec)
+
+        # template placeholder replacements start with the common defaults
+        # to avoid users having to specify each and everyone, but be able to
+        # override them all, if desired
+        spec = dict(
+            spec_defaults,
+            **normalize_specs(spec)
+        )
 
         tmpl_path = None
         for tp in (
