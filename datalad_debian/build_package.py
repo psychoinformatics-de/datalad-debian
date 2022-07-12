@@ -115,7 +115,6 @@ class BuildPackage(Interface):
                 protocol=StdOutCapture)['stdout'].strip().split('\n')
         ]
 
-        print(srcpkg_files)
         # figure out which architecture we will be building for
         binarch = Runner().run(
             ['dpkg-architecture', '-q', 'DEB_BUILD_ARCH'],
