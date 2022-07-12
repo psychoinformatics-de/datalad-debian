@@ -95,18 +95,7 @@ class DebianPackageExtractor(DatasetMetadataExtractor):
         get(path=".", dataset=self.dataset)
         return True
 
-    def extract(self, x=None) -> ExtractorResult:
-        if 'package-name' not in self.parameter:
-            return ExtractorResult(
-                extractor_version=self.get_version(),
-                extraction_parameter=self.parameter or {},
-                extraction_success=False,
-                datalad_result_dict={
-                    "type": "dataset",
-                    "status": "error",
-                    "message": "missing parameter: 'package-name'"
-                },
-                immediate_data=None)
+    def extract(self, _=None) -> ExtractorResult:
 
         d = self.dataset.pathobj
         for version_info in self._find_versions():
@@ -139,7 +128,7 @@ class DebianPackageExtractor(DatasetMetadataExtractor):
                 }
                 for platform in version_info.platforms
             }
-            return ExtractorResult(
+            yield ExtractorResult(
                 extractor_version=self.get_version(),
                 extraction_parameter=self.parameter or {},
                 extraction_success=True,
@@ -148,6 +137,7 @@ class DebianPackageExtractor(DatasetMetadataExtractor):
                     "status": "ok",
                 },
                 immediate_data={
+                    "name": version_info.name,
                     "source": source_info,
                     "binaries": binary_infos,
                 })
@@ -160,16 +150,21 @@ class DebianPackageExtractor(DatasetMetadataExtractor):
         '.deb' files.
         """
 
-        name = self.parameter["package-name"]
+        # name = self.parameter["package-name"]
         package_dir = self.dataset.pathobj
 
-        for path in package_dir.glob(f"{name}_*.dsc"):
+        for path in package_dir.glob("*.dsc"):
             assert path.is_file() is True, f"Not a file: {path}"
+            name = path.name.split('_')[0]
             version_info = path.name[len(name) + 1:-4]
             if "-" in version_info:
                 upstream_version, debian_revision = version_info.split("-")
             else:
                 upstream_version, debian_revision = version_info, 0
+
+            dsc = Dsc(path.open("rt"))
+            assert dsc["source"] == name
+            assert dsc["version"] == version_info
 
             platform_paths = [
                 platform_path.name[len(f"{name}_{version_info}_"):-4]
