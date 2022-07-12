@@ -14,6 +14,7 @@ from datalad.interface.utils import (
     eval_results,
 )
 from datalad.support.constraints import (
+    EnsureChoice,
     EnsureNone,
     EnsureStr,
 )
@@ -55,6 +56,21 @@ class BuildPackage(Interface):
             doc="""Update the builder subdataset from its origin before package
             build""",
             action='store_true'),
+        template=Parameter(
+            args=('--template',),
+            metavar='PATH',
+            doc="""Template name of the relevant build environment. This value
+            will be used to find the right build environment for the package in
+            conjunction with cfgtype and the system's architecture""",
+            constraints=EnsureStr() | EnsureNone()),
+        cfgtype=Parameter(
+            args=('--cfgtype',),
+            default='singularity',
+            doc="""Type of relevant build environment. This value will be used
+            to find the right build environment for the package in conjunction
+            with template and the system's architecture. Currently supported:
+            'singularity'""",
+            constraints=EnsureChoice('singularity')),
     )
 
     _examples_ = [
@@ -68,7 +84,8 @@ class BuildPackage(Interface):
     @staticmethod
     @datasetmethod(name='deb_build_package')
     @eval_results
-    def __call__(dsc, *, dataset=None, update_builder=False):
+    def __call__(dsc, *, dataset=None, update_builder=False,
+                 cfgtype='singularity', template='default'):
         dsc = Path(dsc)
 
         pkg_ds = require_dataset(dataset)

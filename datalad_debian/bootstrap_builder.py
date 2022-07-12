@@ -18,7 +18,9 @@ from datalad.runner import (
     StdOutCapture,
 )
 from datalad.support.constraints import (
+    EnsureChoice,
     EnsureNone,
+    EnsureStr,
 )
 from datalad.support.param import Parameter
 
@@ -58,6 +60,21 @@ class BootstrapBuilder(Interface):
             doc="""specify a builder dataset that contains a build environment
             configuration""",
             constraints=EnsureDataset() | EnsureNone()),
+        template=Parameter(
+            args=('--template',),
+            metavar='PATH',
+            doc="""Template name of the relevant build environment. This value
+            will be used to find the right build environment for the package in
+            conjunction with cfgtype and the system's architecture""",
+            constraints=EnsureStr() | EnsureNone()),
+        cfgtype=Parameter(
+            args=('--cfgtype',),
+            default='singularity',
+            doc="""Type of relevant build environment. This value will be used
+            to find the right build environment for the package in conjunction
+            with template and the system's architecture. Currently supported:
+            'singularity'""",
+            constraints=EnsureChoice('singularity')),
     )
 
     _examples_ = [
@@ -70,10 +87,7 @@ class BootstrapBuilder(Interface):
     @staticmethod
     @datasetmethod(name='deb_bootstrap_builder')
     @eval_results
-    def __call__(*, dataset=None):
-        # TODO this could later by promoted to an option to support more than
-        # singularity
-        cfgtype = 'singularity'
+    def __call__(*, dataset=None, cfgtype='singularity', template='default'):
 
         builder_ds = require_dataset(dataset)
 
