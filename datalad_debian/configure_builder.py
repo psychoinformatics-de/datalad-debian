@@ -49,6 +49,10 @@ class ConfigureBuilder(Interface):
 
     - 'singularity-default': A Singularity recipe requiring the spec
       'dockerbase' with a value for the container's base image
+    - 'nonfree': A Singularity recipe requiring the spec
+      'dockerbase' with a value for the container's base image. Compared to
+      'singularity-default', this template environment allows dependencies to
+      nonfree dependencies
     """
 
     _params_ = dict(
