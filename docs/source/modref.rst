@@ -16,4 +16,5 @@ The order of commands follows their logical order of execution in a start-to-end
    deb_new_package
    deb_build_package
    deb_new_reprepro_repository
+   deb_update_reprepro_repository
    deb_add_distribution

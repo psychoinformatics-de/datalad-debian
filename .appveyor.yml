@@ -35,7 +35,7 @@ environment:
     - ID: Ubu20
       DTS: datalad_debian
       APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
-      INSTALL_SYSPKGS: python3-virtualenv devscripts moreutils
+      INSTALL_SYSPKGS: python3-virtualenv devscripts moreutils reprepro
       # system git-annex is way too old, use better one
       INSTALL_GITANNEX: git-annex -m datalad/git-annex:release
       CODECOV_BINARY: https://uploader.codecov.io/latest/linux/codecov

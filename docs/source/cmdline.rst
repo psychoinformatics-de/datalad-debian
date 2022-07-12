@@ -15,4 +15,5 @@ The order of commands follows their logical order of execution in a start-to-end
    generated/man/datalad-deb-new-package
    generated/man/datalad-deb-build-package
    generated/man/datalad-deb-new-reprepro-repository
+   generated/man/datalad-deb-update-reprepro-repository
    generated/man/datalad-deb-add-distribution

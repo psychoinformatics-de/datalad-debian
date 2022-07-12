@@ -48,7 +48,7 @@ class ConfigureBuilder(Interface):
 
     Currently supported templates are
 
-    - 'singularity-default': A Singularity recipe requiring the spec
+    - 'default': A Singularity recipe requiring the spec
       'dockerbase' with a value for the container's base image
     """
 
