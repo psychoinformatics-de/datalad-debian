@@ -16,10 +16,4 @@ if __name__ == '__main__':
         name='datalad_debian',
         version=versioneer.get_version(),
         cmdclass=cmdclass,
-        entry_points={
-            'datalad.metadata.extractors': [
-                'debian_package_dataset=datalad_debian.metadata.extractors.debian_package_dataset:DebianPackageExtractor',
-            ]
-        }
     )
-

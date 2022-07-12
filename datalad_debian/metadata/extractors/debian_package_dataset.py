@@ -102,12 +102,13 @@ class DebianPackageExtractor(DatasetMetadataExtractor):
             source_element_name = DebianPackageElementNames(
                 version_info.name,
                 version_info.upstream_version,
-                version_info.debian_revision)
+                version_info.debian_revision
+            )
 
             source_info = {
                 "dsc": str(Dsc(open(d / source_element_name["dsc"], "rt"))),
                 "orig": "NOT IMPLEMENTED",
-                "debian": "NOT IMPLEMENTED",
+                "debian": "NOT IMPLEMENTED"
             }
 
             binary_names = {
@@ -117,17 +118,13 @@ class DebianPackageExtractor(DatasetMetadataExtractor):
                     version_info.debian_revision,
                     platform)
                 for platform in version_info.platforms
-
             }
+
             binary_infos = {
-                platform: {
-                    "deb": str(DebFile(d / binary_names[platform]["deb"])),
-                    "dbgsym": str(DebFile(d / binary_names[platform]["dbgsym"])),
-                    "build_info": str(BuildInfo(open(d / binary_names[platform]["buildinfo"], "rt"))),
-                    "changes": str(Changes(open(d / binary_names[platform]["changes"], "rt")))
-                }
+                platform: self._get_binary_info(d, binary_names[platform])
                 for platform in version_info.platforms
             }
+
             yield ExtractorResult(
                 extractor_version=self.get_version(),
                 extraction_parameter=self.parameter or {},
@@ -140,7 +137,18 @@ class DebianPackageExtractor(DatasetMetadataExtractor):
                     "name": version_info.name,
                     "source": source_info,
                     "binaries": binary_infos,
-                })
+                }
+            )
+
+    def _get_binary_info(self, path, names):
+        return {
+            "deb": str(DebFile(path / names["deb"])),
+            "dbgsym": str(DebFile(path / names["dbgsym"])),
+            "build_info": str(
+                BuildInfo(open(path / names["buildinfo"], "rt"))
+            ),
+            "changes": str(Changes(open(path / names["changes"], "rt")))
+        }
 
     def _find_versions(self):
         """Find all versions and platforms
@@ -149,8 +157,6 @@ class DebianPackageExtractor(DatasetMetadataExtractor):
         detection is based on '.dsc'-files. Platforms are determined based on
         '.deb' files.
         """
-
-        # name = self.parameter["package-name"]
         package_dir = self.dataset.pathobj
 
         for path in package_dir.glob("*.dsc"):
