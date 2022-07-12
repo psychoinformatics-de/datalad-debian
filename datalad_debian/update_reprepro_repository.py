@@ -24,8 +24,6 @@ from datalad.support.constraints import (
 )
 from datalad.support.param import Parameter
 
-from datalad_debian.utils import result_matches
-
 
 lgr = logging.getLogger('datalad.debian.new_distribution')
 
@@ -71,44 +69,64 @@ class UpdateRepreproRepository(Interface):
             ['log', '-1', '--format=%H'], files='www')
         lgr.debug('Using archive update ref %r', last_update_hexsha)
 
-        dist_subdataset_relpath = reprepro_ds.subdatasets(
+        # we want to make sure all the distributions are up-to-date,
+        # we need the respective superdatasets to be able to run
+        # update() on them
+        yield from reprepro_ds.get(
             'distributions',
-            result_xfm='relpaths',
-            result_renderer="disabled")
+            get_data=False,
+            recursive=True,
+            recursion_limit=1,
+            result_renderer="disabled",
+        )
 
+        dist_subdatasets = reprepro_ds.subdatasets(
+            'distributions',
+            result_xfm='datasets',
+            result_renderer="disabled",
+        )
+        for dist_sds in dist_subdatasets:
+            yield from dist_sds.update(
+                # 'reset' means we intentionally discard any local change
+                how='reset',
+                follow='parentds-lazy',
+                # we cannot limit recursion without risking a dataset hierarchy
+                # that is not in-sync
+                recursive=True,
+                result_renderer="disabled",
+            )
+        yield from reprepro_ds.save(
+            'distributions',
+            message='Update distribution subdatasets',
+            result_renderer="disabled",
+
+        )
+
+        # which distributions saw an update since the last update of 'www'
+        # this is not necessarily identical to what was saved above
         updated_dists = [
             d for d in reprepro_ds.diff(
                 'distributions',
                 fr=last_update_hexsha,
-                result_xfm='relpaths',
+                result_xfm='datasets',
                 result_renderer='disabled')
-            if d in dist_subdataset_relpath
+            if d in dist_subdatasets
         ]
         # TODO could be done in parallel
         for ud in updated_dists:
             yield from _get_updates_from_dist(
                 reprepro_ds,
-                Path(ud),
+                ud,
                 last_update_hexsha,
             )
 
 
-def _get_updates_from_dist(ds, dpath, ref):
-    # TODO option to drop distributions that were not present locally before?
-    # make sure the distribution dataset is present locally
-    lgr.debug('Updating from %s', dpath)
-    dist_ds = ds.get(
-        path=dpath,
-        get_data=False,
-        result_xfm='datasets',
-        result_renderer='disabled',
-        return_type='item-or-list',
-    )
+def _get_updates_from_dist(ds, dist_ds, ref):
     updated_pkg_datasets = [
         # we must use `ds` again to keep the validity of `ref`
         pkg_ds for pkg_ds in ds.diff(
             fr=ref,
-            path=dpath / 'packages',
+            path=dist_ds.pathobj / 'packages',
             recursive=True,
             recursion_limit=1,
             result_xfm='datasets',

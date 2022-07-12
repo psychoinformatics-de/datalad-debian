@@ -84,13 +84,6 @@ Architectures: source amd64
     )
     # save the package update in the distribution package
     save(dataset=dist_ds_p, **ckwa)
-    # update distribution packages within the archive dataset
-    # TODO add option to do this automatically?
-    # we must do unlimited recursive to catch any possibly present package
-    # dataset too and maintain a consistent state of the entire hierarchy.
-    # we use 'reset', because we want to pull from source whatever it has
-    # and not support modifications done in the local clones
-    update(dataset=archive_ds_p, how='reset', recursive=True, **ckwa)
     # now update the archive, it must replace -1 with -2
     res = deb_update_reprepro_repository(dataset=archive_ds_p, **ckwa)
     srcs = gzip.open(
@@ -114,7 +107,6 @@ Architectures: source amd64
         **ckwa
     )
     save(dataset=dist_ds_p, **ckwa)
-    update(dataset=archive_ds_p, how='reset', recursive=True, **ckwa)
     res = deb_update_reprepro_repository(dataset=archive_ds_p, **ckwa)
     debinpool = (
         archive_ds_p / 'www' / 'pool' / 'main' / 't' / 'tqdm' /
