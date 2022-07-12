@@ -182,7 +182,8 @@ class BuildPackage(Interface):
                 path='pkg_ds',
                 message=(
                     "Couldn't find the required builder container %s. Forgot to "
-                    "bootrap it?", cname
+                    "bootrap it, or supply non-default template/cfgtype name?",
+                    cname
                 )
 
             )
