@@ -96,11 +96,11 @@ class BootstrapBuilder(Interface):
             ['dpkg-architecture', '-q', 'DEB_BUILD_ARCH'],
             protocol=StdOutCapture)['stdout'].strip()
 
-        buildenv_name = f"{cfgtype}-{binarch}"
+        buildenv_name = f"{cfgtype}-{template}-{binarch}"
 
         recipe = None
-        for p in (builder_ds.pathobj / 'recipes' / f"{cfgtype}-{binarch}",
-                  builder_ds.pathobj / 'recipes' / f"{cfgtype}-any"):
+        for p in (builder_ds.pathobj / 'recipes' / f"{cfgtype}-{template}-{binarch}",
+                  builder_ds.pathobj / 'recipes' / f"{cfgtype}-{template}-any"):
             if p.exists():
                 recipe = p
                 break

@@ -112,16 +112,12 @@ class BuildPackage(Interface):
         ]
 
         print(srcpkg_files)
-        # TODO this could later by promoted to an option to support more than
-        # singularity
-        cfgtype = 'singularity'
-
         # figure out which architecture we will be building for
         binarch = Runner().run(
             ['dpkg-architecture', '-q', 'DEB_BUILD_ARCH'],
             protocol=StdOutCapture)['stdout'].strip()
 
-        buildenv_name = f"{cfgtype}-{binarch}"
+        buildenv_name = f"{cfgtype}-{template}-{binarch}"
 
         # needed, even when no `update_builder` is intended because we want to
         # establish a cache dir inside the build dataset

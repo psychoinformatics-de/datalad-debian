@@ -119,22 +119,19 @@ class ConfigureBuilder(Interface):
             if tp.exists():
                 tmpl_path = tp
                 break
-
         if tmpl_path is None:
             raise ValueError(
                 f'Cannot locate builder configuration template {template!r}')
-
-        template = tmpl_path.read_text()
-
+        tmpl = tmpl_path.read_text()
         try:
-            builder_config = template.format(**spec)
+            builder_config = tmpl.format(**spec)
         except KeyError as e:
             raise ValueError(
                 "Missing value for builder configuration template "
                 f"instantiation: {e}"
             ) from e
 
-        cfg_path = builder_ds.pathobj / 'recipes' / f'{cfgtype}-{cfgarch}'
+        cfg_path = builder_ds.pathobj / 'recipes' / f'{cfgtype}-{template}-{cfgarch}'
         cfg_path.write_text(builder_config)
         yield from builder_ds.save(
             cfg_path,
