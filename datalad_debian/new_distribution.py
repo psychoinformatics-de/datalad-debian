@@ -27,6 +27,12 @@ lgr = logging.getLogger('datalad.debian.new_distribution')
 @build_doc
 class NewDistribution(Interface):
     """Create a new distribution dataset
+
+    A typical distribution dataset contains a 'builder' subdataset with one or
+    more build environments, and a package subdirectory with one subdataset per
+    Debian package.
+    This command creates the initial structure: A top-level dataset
+    under the provided path and a configured 'builder' subdataset underneath.
     """
     _params_ = dict(
         dataset=Parameter(
@@ -53,7 +59,12 @@ class NewDistribution(Interface):
             action='store_true'),
     )
 
-    _examples_ = []
+    _examples_ = [
+        dict(text="Create a new distribution dataset called 'bullseye' in the "
+             "current directory",
+             code_py="deb_new_distribution(path='bullseye')",
+             code_cmd="datalad deb-new-distribution bullseye"),
+    ]
 
     @staticmethod
     @datasetmethod(name='deb_new_distribution')

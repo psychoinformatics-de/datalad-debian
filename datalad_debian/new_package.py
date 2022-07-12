@@ -23,7 +23,18 @@ lgr = logging.getLogger('datalad.debian.new_package')
 
 @build_doc
 class NewPackage(Interface):
-    """Create a new package dataset
+    """Create a new package dataset inside of a distribution dataset
+
+    In its final stage, a typical package dataset contains the source files,
+    built binaries, and builder subdataset for a Debian package.
+    This command creates the initial structure: A package dataset in
+    the 'package/' subdirectory of a distribution dataset and a 'builder'
+    subdataset underneath it. It should be run in the root of a distribution
+    dataset with a configured and bootstrapped builder, as the distribution's
+    'builder' subdataset will be registered in the package dataset to be used
+    to build the binaries. To prevent package name clashes within a
+    distribution dataset, it is advisable to use the Debian package's name as
+    the name for the package dataset.
     """
     _params_ = dict(
         dataset=Parameter(
@@ -42,7 +53,14 @@ class NewPackage(Interface):
             action='store_true'),
     )
 
-    _examples_ = []
+    _examples_ = [
+        dict(
+            text="Create a new package dataset 'hello' in a distribution "
+                 "dataset",
+            code_cmd="datalad deb-new-package hello",
+            code_py="deb_new_package('hello')")
+
+    ]
 
     @staticmethod
     @datasetmethod(name='deb_new_package')
