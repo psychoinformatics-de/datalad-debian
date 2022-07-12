@@ -45,11 +45,14 @@ command_suite = (
             'deb-new-reprepro-repository',
             'deb_new_reprepro_repository',
         ),
+        (
+            'datalad_debian.add_distribution',
+            'AddDistribution',
+            'deb-add-distribution',
+            'deb_add_distribution',
+        ),
     ]
 )
-
-from datalad import setup_package
-from datalad import teardown_package
 
 from ._version import get_versions
 __version__ = get_versions()['version']
