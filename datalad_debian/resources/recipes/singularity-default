@@ -59,3 +59,4 @@ logfile="/pkg/logs/${{logbase}}_${{ts}}_${{flavor}}.txt"
 mkdir -p /pkg/logs
 bash /doall.sh "$dsc" |& tee "$logfile"
 echo -e "\n#\n# Builder exit: $(date -u --iso-8601=seconds)\n#\n" >> "$logfile"
+echo -e "\n#\n# datalad-debian: build succeeded\n#\n" >> "$logfile"
