@@ -36,6 +36,10 @@ class BuildPackage(Interface):
     The command relies on a (containerized) build environment within a package's
     'builder' subdataset. The 'builder' subdataset can optionally be updated
     beforehand.
+    If the builder/ subdataset contains several build environments, by default
+    'singularity-default-<arch-of-the-system>.sif' will be used. Alternative
+    environments can be specified using the cfgtype and template parameters
+    which will be combined to '{cfgtype}-{template}-<arch-of-the-system>'.
 
     Beyond binary .deb files, this command creates a .changes, a .buildinfo,
     and a logs/.txt file with build metadata and provenance. All resulting

@@ -34,6 +34,11 @@ class BootstrapBuilder(Interface):
     This command bootstraps a (containerized) build environment (such as a
     Singularity container) based on an existing builder configuration (such as
     a Singularity recipe).
+    If there are multiple builder configurations, the command will by default
+    look for and bootstrap 'singularity-default-any' and
+    'singularity-default-<arch-of-the-system>'. Alternative configurations
+    can be specified using the cfgtype and template parameters, which will be
+    combined into '{cfgtype}-{template}-<arch-of-the-system>'.
 
     The execution of this command might require administrative privileges and
     could prompt for a sudo password, for example to build a
@@ -47,10 +52,10 @@ class BootstrapBuilder(Interface):
         |    ├── builder             <- builder subdataset
         |    │   ├── envs
         |    │   │   ├── README.md
-        |    │   │   └── singularity-amd64.sif   <- bootstrapped build environment
+        |    │   │   └── singularity-default-amd64.sif   <- bootstrapped build environment
         |    │   └── recipes
         |    │       ├── README.md
-        |    │       └── singularity-any     <- builder configuration
+        |    │       └── singularity-default-any     <- builder configuration
 
     """
 

@@ -44,7 +44,7 @@ class ConfigureBuilder(Interface):
         |    │   │   └──  README.md
         |    │   └── recipes
         |    │       ├── README.md
-        |    │       └── singularity-any     <- builder configuration
+        |    │       └── singularity-default-any     <- builder configuration
 
     Currently supported templates are
 
