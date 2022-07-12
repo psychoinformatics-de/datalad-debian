@@ -94,7 +94,6 @@ class BuildPackage(Interface):
                 protocol=StdOutCapture)['stdout'].strip().split('\n')
         ]
 
-        print(srcpkg_files)
         # TODO this could later by promoted to an option to support more than
         # singularity
         cfgtype = 'singularity'
