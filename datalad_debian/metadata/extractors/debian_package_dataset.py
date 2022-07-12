@@ -32,6 +32,7 @@ from datalad_metalad.extractors.base import (
 @dataclass
 class DebianPackageVersion:
     name: str
+    version_string: str
     upstream_version: str
     debian_revision: str
     platforms: List
@@ -48,7 +49,11 @@ class DebianPackageElementNames:
                  platform: Optional[str] = None):
 
         upstream_name = f"{name}_{upstream_version}"
-        debian_name = f"{upstream_name}-{debian_revision}"
+        debian_name = (
+            f"{upstream_name}-{debian_revision}"
+            if debian_revision != "0"
+            else upstream_name
+        )
         platform_name = f"{debian_name}_{platform}"
         dbgsym_name = platform_name.replace(f"{name}_", f"{name}-dbgsym_")
 
@@ -98,15 +103,21 @@ class DebianPackageExtractor(DatasetMetadataExtractor):
     def extract(self, _=None) -> ExtractorResult:
 
         d = self.dataset.pathobj
+
+        package_name = None
+        upstream_versions = {}
+
         for version_info in self._find_versions():
-            source_element_name = DebianPackageElementNames(
+            source_element_names = DebianPackageElementNames(
                 version_info.name,
                 version_info.upstream_version,
                 version_info.debian_revision
             )
 
+            package_name = version_info.name
+            package_dsc = Dsc(open(d / source_element_names["dsc"], "rt"))
             source_info = {
-                "dsc": str(Dsc(open(d / source_element_name["dsc"], "rt"))),
+                "dsc": str(package_dsc),
                 "orig": "NOT IMPLEMENTED",
                 "debian": "NOT IMPLEMENTED"
             }
@@ -125,29 +136,47 @@ class DebianPackageExtractor(DatasetMetadataExtractor):
                 for platform in version_info.platforms
             }
 
-            yield ExtractorResult(
-                extractor_version=self.get_version(),
-                extraction_parameter=self.parameter or {},
-                extraction_success=True,
-                datalad_result_dict={
-                    "type": "dataset",
-                    "status": "ok",
-                },
-                immediate_data={
-                    "name": version_info.name,
-                    "source": source_info,
-                    "binaries": binary_infos,
+            if version_info.upstream_version not in upstream_versions:
+                upstream_versions[version_info.upstream_version] = {
+                    "orig": f"(NOT IMPLEMENTED): {source_element_names['orig']}",
+                    "debian_revisions": {}
                 }
-            )
+            version_dict = upstream_versions[version_info.upstream_version]
+
+            if version_info.debian_revision not in version_dict["debian_revisions"]:
+                version_dict["debian_revisions"][version_info.debian_revision] = {
+                    "binaries": {}
+                }
+            revision_dict = version_dict["debian_revisions"][version_info.debian_revision]
+
+            revision_dict["debian"] = f"{source_element_names['debian']}"
+            revision_dict["maintainer"] = f"{package_dsc['maintainer']}"
+            revision_dict["homepage"] = f"{package_dsc['homepage']}"
+
+            for platform, element_names in binary_names.items():
+                assert platform not in revision_dict["binaries"]
+                revision_dict["binaries"][platform] = binary_infos[platform]
+
+        return ExtractorResult(
+            extractor_version=self.get_version(),
+            extraction_parameter=self.parameter or {},
+            extraction_success=True,
+            datalad_result_dict={
+                "type": "dataset",
+                "status": "ok",
+            },
+            immediate_data={
+                "name": package_name,
+                "upstream_version": upstream_versions,
+            }
+        )
 
     def _get_binary_info(self, path, names):
         return {
-            "deb": str(DebFile(path / names["deb"])),
-            "dbgsym": str(DebFile(path / names["dbgsym"])),
-            "build_info": str(
-                BuildInfo(open(path / names["buildinfo"], "rt"))
-            ),
-            "changes": str(Changes(open(path / names["changes"], "rt")))
+            "deb": f"{names['deb']} {DebFile(path / names['deb'])}",
+            "dbgsym": f"{names['dbgsym']} {DebFile(path / names['dbgsym'])}",
+            "build_info": f"{names['buildinfo']} {BuildInfo(open(path / names['buildinfo'], 'rt'))}",
+            "changes": f"{names['changes']} {Changes(open(path / names['changes'], 'rt'))}",
         }
 
     def _find_versions(self):
@@ -159,18 +188,24 @@ class DebianPackageExtractor(DatasetMetadataExtractor):
         """
         package_dir = self.dataset.pathobj
 
+        all_names = set()
         for path in package_dir.glob("*.dsc"):
+
             assert path.is_file() is True, f"Not a file: {path}"
             name = path.name.split('_')[0]
+            all_names.add(name)
+            assert len(all_names) == 1, f"More than one packet name found: {str(all_names)}"
+
             version_info = path.name[len(name) + 1:-4]
             if "-" in version_info:
                 upstream_version, debian_revision = version_info.split("-")
             else:
-                upstream_version, debian_revision = version_info, 0
+                upstream_version, debian_revision = version_info, "0"
 
             dsc = Dsc(path.open("rt"))
-            assert dsc["source"] == name
-            assert dsc["version"] == version_info
+            assert dsc["source"] == package_dir.name, f"directory name ({package_dir.name}) does not match source ({dsc['source']}) in .dsc-file."
+            assert dsc["source"] == name, f"file name ({name}) does not match source ({dsc['source']}) in .dsc-file."
+            assert dsc["version"] == version_info, f"version in file name ({version_info}) does not match version ({dsc['version']}) in .dsc-file."
 
             platform_paths = [
                 platform_path.name[len(f"{name}_{version_info}_"):-4]
@@ -179,6 +214,7 @@ class DebianPackageExtractor(DatasetMetadataExtractor):
 
             yield DebianPackageVersion(
                 name,
+                version_info,
                 upstream_version,
                 debian_revision,
                 platform_paths)
