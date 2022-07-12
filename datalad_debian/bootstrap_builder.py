@@ -112,15 +112,22 @@ class BootstrapBuilder(Interface):
         if recipe is None:
             raise RuntimeError(
                 "Cannot locate build environment recipe for "
-                f"{cfgtype}({binarch})")
-
+                f"{cfgtype}-{template}({binarch})")
+        # define extensions of environment names and to-be-executed bootstrap
+        # command based on specified cfgtype
+        if cfgtype == 'singularity':
+            ext = 'sif'
+            # TODO allow for other means of privilege escalation
+            cmd = 'sudo singularity build --force {outputs} {inputs}'
         # TODO allow for other types of environments
-        buildenv = Path('envs', f"{buildenv_name}.sif")
+        else:
+            raise NotImplementedError("No known extension and bootstrapping"
+                                      "command for configuration of type %s"
+                                      % cfgtype)
+        buildenv = Path('envs', f"{buildenv_name}.{ext}")
 
         yield from builder_ds.run(
-            # TODO allow for other means of privilege escalation
-            # TODO allow for other means to bootstrap
-            "sudo singularity build --force {outputs} {inputs}",
+            cmd,
             inputs=[str(recipe.relative_to(builder_ds.pathobj))],
             outputs=[str(buildenv)],
             message=f"Bootstrap builder '{buildenv_name}'",
