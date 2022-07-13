@@ -34,6 +34,9 @@ binary packages from source packages are performed using standard solutions
 such as `reprepro <https://salsa.debian.org/brlink/reprepro>`__, or
 `dpkg <https://www.dpkg.org>`__
 
+To get a feel for this machinery, see the :ref:`walk-through
+<chap_walkthrough>`.
+
 
 Overview
 ========
@@ -42,8 +45,7 @@ Overview
    :maxdepth: 1
 
    concepts
-   usage
-
+   walkthrough
 
 
 Commands and API
