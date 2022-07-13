@@ -23,16 +23,21 @@ from datalad.support.param import Parameter
 lgr = logging.getLogger('datalad.debian.configure_builder')
 
 
+spec_defaults = {
+    'debian_archive_sections': 'main',
+}
+
+
 @build_doc
 class ConfigureBuilder(Interface):
     """Configure a package build environment
 
-    A builder is a (containerized) build environment used to build binary Debian
-    packages from source files. This command is typically run in a distribution
-    dataset and configures a builder recipe based on a template and
-    user-specified values for the template's placeholders.
-    The resulting recipe will be placed in the 'recipes/' directory in the
-    'builder/' subdataset of a distribution dataset.
+    A builder is a (containerized) build environment used to build binary
+    Debian packages from Debian source packages. This command is typically run
+    on the builder dataset in a distribution dataset and configures a builder
+    recipe based on a template and user-specified values for the template's
+    placeholders.  The resulting recipe will be placed in the 'recipes/'
+    directory of the builder dataset.
 
     The following directory tree illustrates this.
     The configured builder takes the form of a Singularity recipe here.
@@ -47,8 +52,16 @@ class ConfigureBuilder(Interface):
 
     Currently supported templates are
 
-    - 'default': A Singularity recipe requiring the spec
-      'dockerbase' with a value for the container's base image
+    Template ``'default'``
+
+    This is a Singularity recipe with the following configuration items:
+
+    - ``dockerbase`` (required): name of a Docker base image for the
+      container, i.e. 'debian:bullseye'
+    - ``'debian_archive_sections`` (optional): which sections of the
+      Debian package archive to enable for APT in the build environment.
+      To enable all sections set to 'main contrib non-free'.
+      Default: 'main'
     """
 
     _params_ = dict(
@@ -101,7 +114,14 @@ class ConfigureBuilder(Interface):
 
         # TODO check if this is an actual builder dataset,
         # and give advice if not
-        spec = normalize_specs(spec)
+
+        # template placeholder replacements start with the common defaults
+        # to avoid users having to specify each and everyone, but be able to
+        # override them all, if desired
+        spec = dict(
+            spec_defaults,
+            **normalize_specs(spec)
+        )
 
         tmpl_path = None
         for tp in (
