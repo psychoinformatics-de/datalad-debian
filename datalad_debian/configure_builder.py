@@ -52,15 +52,16 @@ class ConfigureBuilder(Interface):
 
     Currently supported templates are
 
-    - 'default': A Singularity recipe.
+    Template ``'default'``
 
-      Required parameters:
-      - 'dockerbase' with a value for the container's base image
+    This is a Singularity recipe with the following configuration items:
 
-      Optional parameters:
-      - 'debian_archive_sections' which sections of the Debian package archive
-        to enable for APT in the build environment. To enable all sections
-        set to 'main contrib non-free'. Default: 'main'
+    - ``dockerbase`` (required): name of a Docker base image for the
+      container, i.e. 'debian:bullseye'
+    - ``'debian_archive_sections`` (optional): which sections of the
+      Debian package archive to enable for APT in the build environment.
+      To enable all sections set to 'main contrib non-free'.
+      Default: 'main'
     """
 
     _params_ = dict(
