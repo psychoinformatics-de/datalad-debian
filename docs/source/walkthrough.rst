@@ -1,5 +1,14 @@
-Quick Start
-***********
+.. _chap_walkthrough:
+
+Walk-through
+************
+
+Let's take a look at the main steps and building blocks to go from source code
+to a fully functional APT repository that any Debian-based machine can retrieve
+and install readily executable software packages from.
+
+This walk-through demos the command line interface of DataLad. However, an analog
+Python API is provided too.
 
 
 Create a distribution dataset
