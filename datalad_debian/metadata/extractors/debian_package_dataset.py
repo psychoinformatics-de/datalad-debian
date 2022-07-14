@@ -116,12 +116,6 @@ class DebianPackageExtractor(DatasetMetadataExtractor):
 
             package_name = version_info.name
             package_dsc = Dsc(open(d / source_element_names["dsc"], "rt"))
-            source_info = {
-                "dsc": str(package_dsc),
-                "orig": "NOT IMPLEMENTED",
-                "debian": "NOT IMPLEMENTED"
-            }
-
             binary_names = {
                 platform: DebianPackageElementNames(
                     version_info.name,
@@ -149,34 +143,47 @@ class DebianPackageExtractor(DatasetMetadataExtractor):
                 }
             revision_dict = version_dict["debian_revisions"][version_info.debian_revision]
 
-            revision_dict["debian"] = f"{source_element_names['debian']}"
-            revision_dict["maintainer"] = f"{package_dsc['maintainer']}"
-            revision_dict["homepage"] = f"{package_dsc['homepage']}"
+            revision_dict["debian"] = source_element_names['debian']
+            revision_dict["maintainer"] = package_dsc['maintainer']
+            revision_dict["homepage"] = package_dsc.get('homepage', None)
+            revision_dict["standards-version"] = package_dsc["standards-version"]
 
             for platform, element_names in binary_names.items():
                 assert platform not in revision_dict["binaries"]
                 revision_dict["binaries"][platform] = binary_infos[platform]
 
-        return ExtractorResult(
-            extractor_version=self.get_version(),
-            extraction_parameter=self.parameter or {},
-            extraction_success=True,
-            datalad_result_dict={
-                "type": "dataset",
-                "status": "ok",
-            },
-            immediate_data={
-                "name": package_name,
-                "upstream_version": upstream_versions,
-            }
-        )
+        if package_name is not None:
+            return ExtractorResult(
+                extractor_version=self.get_version(),
+                extraction_parameter=self.parameter or {},
+                extraction_success=True,
+                datalad_result_dict={
+                    "type": "dataset",
+                    "status": "ok",
+                },
+                immediate_data={
+                    "name": package_name,
+                    "upstream_version": upstream_versions,
+                }
+            )
+        else:
+            return ExtractorResult(
+                extractor_version=self.get_version(),
+                extraction_parameter=self.parameter or {},
+                extraction_success=False,
+                datalad_result_dict={
+                    "type": "dataset",
+                    "status": "error",
+                    "message": "no debian package"
+                }
+            )
 
     def _get_binary_info(self, path, names):
         return {
-            "deb": f"{names['deb']} {DebFile(path / names['deb'])}",
-            "dbgsym": f"{names['dbgsym']} {DebFile(path / names['dbgsym'])}",
-            "build_info": f"{names['buildinfo']} {BuildInfo(open(path / names['buildinfo'], 'rt'))}",
-            "changes": f"{names['changes']} {Changes(open(path / names['changes'], 'rt'))}",
+            "deb": f"{names['deb']}: {DebFile(path / names['deb'])}",
+            "dbgsym": f"{names['dbgsym']}: {DebFile(path / names['dbgsym'])}",
+            "build_info": f"{names['buildinfo']}: {BuildInfo(open(path / names['buildinfo'], 'rt'))}",
+            "changes": f"{names['changes']}: {Changes(open(path / names['changes'], 'rt'))}",
         }
 
     def _find_versions(self):
@@ -198,7 +205,7 @@ class DebianPackageExtractor(DatasetMetadataExtractor):
 
             version_info = path.name[len(name) + 1:-4]
             if "-" in version_info:
-                upstream_version, debian_revision = version_info.split("-")
+                upstream_version, debian_revision = version_info.rsplit("-", 1)
             else:
                 upstream_version, debian_revision = version_info, "0"
 
