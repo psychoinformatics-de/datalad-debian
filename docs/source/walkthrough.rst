@@ -41,11 +41,11 @@ It contains the subdirectories:
 
 ::
 
-   bullseye
-   └── builder
-        ├── envs
+   bullseye/
+   └── builder/
+        ├── envs/
         │   └── README.md
-        └── recipes
+        └── recipes/
             └── README.md
 
 Configure and create a package builder
@@ -62,7 +62,7 @@ the specific distribution release.
 
 This creates a singularity container recipe for a Debian bullseye environment
 based on a default template. Check the documentation of `deb-configure-builder`
-for additonal configuration options, for example to enable `non-free` package
+for additional configuration options, for example to enable `non-free` package
 sources.
 
 The command ``deb-bootstrap-builder`` can now be run to bootstrap the
@@ -88,12 +88,12 @@ in the ``distribution`` dataset.
 
 ::
 
-   bullseye
-   └── builder
-        ├── envs
+   bullseye/
+   └── builder/
+        ├── envs/
         │   ├── README.md
         │   └── singularity-amd64.sif
-        └── recipes
+        └── recipes/
             ├── README.md
             └── singularity-any
 
@@ -184,31 +184,232 @@ is registered in the dataset, for example, to re-build historical versions of
 a dataset with the respective historical build environment version.
 
 Updating a package dataset with new versions of the Debian source package, and
-building binary packages from them is done be simply repeating the respective
+building binary packages from them is done by simply repeating the respective
 steps.
 
 
 Create an archive dataset
 =========================
 
+With Debian source and binary packages organized in distribution and package
+datasets, the remaining step is to generate a package archive that APT can use
+to retrieve and install Debian packages from. A dedicated tool that can do this
+is ``reprepro``, and is also the main work horse here. By applying the
+previously used patterns of dataset nesting to tracking inputs, and capturing
+the provenance of tool execution, when will use ``reprepro`` to ingest packages
+from our distribution dataset into an APT package archive.
+
+The first step is to create the archive DataLad dataset:
+
+.. code-block:: bash
+
+   # this is NOT done inside the distribution dataset
+   cd ..
+   datalad deb-new-reprepro-repository apt
+   cd apt
+
+We give it the name ``apt``, but this is only the name of the directory, the
+dataset is created in.
+
+::
+
+  apt/
+  ├── conf/
+  │   ├── distributions
+  │   └── options
+  ├── distributions/
+  │   └── README
+  ├── README
+  └── www/
+
+The dataset is pre-populated with some content that largely reflects an
+organization required by ``reprepro`` described elsewhere. Importantly,
+we have to adjust the file ``conf/distributions`` to indicate the
+component of the APT archive that ``reprepro`` shall generate and which
+packages to accept. A minimal configuration for this demo walk-through
+could be::
+
+  Codename: bullseye
+  Components: main
+  Architectures: source amd64
+
+A real-world configuration would be a little more complex, and typically
+list a key to sign the archive with, etc. Once we completed the
+configuration, we can safe the archive dataset:
+
+.. code-block:: bash
+
+   datalad save -m 'Configured archive distributions'
+
+Now we are ready to link a distribution to the archive. This will be
+the source Debian package will be incorporated into the archive from:
+
+.. code-block:: bash
+
+   datalad deb-add-distribution ../bullseye bullseye
+
+The ``deb-add-distribution`` command takes two mandatory arguments:
+1) a source URL for a distribution dataset, and 2) a name to register
+the distribution under. In a real-world case the source URL will be
+pointing to some kind of hosting service. Here we obtain it from the
+root directory of the walk-through demo.
+
+::
+
+  apt/
+  ├── conf/
+  │   ├── distributions
+  │   └── options
+  ├── distributions/
+  │   ├── bullseye/
+  │   │   ├── builder/
+  │   │   └── packages/
+  │   │       └── hello/
+  │   └── README
+  ├── README
+  └── www/
+
+As we can see, the archive dataset now links the distribution dataset,
+and also its package dataset, in a consistent, version tree (confirm
+clean dataset state with ``datalad status``.
 
 
-Update components
-=================
+Ingest Debian package into an archive dataset
+=============================================
 
-Builder Dataset
----------------
+With all information tracked in DataLad dataset, we can automatically
+determine which packages have been added and built in any linked
+distribution since the last archive update -- without having to
+operate a separate upload queue. This automatic queue generation and
+processing it performed by the ``deb-update-reprepro-repository``
+command.
 
-Package Dataset
----------------
+.. code-block:: bash
 
-Distribution Dataset
---------------------
+   datalad deb-update-reprepro-repository
 
-Archive Dataset
----------------
+Running this command on the archive dataset will fetch any updates to
+all linked distribution datasets, and perform a ``diff`` with respect
+to the last change recorded for the ``reprepro`` output directory
+``www/``.
 
-Retiring a Distribution
-=======================
+As we can see when running the command, no packages are ingested. That is
+because when adding the Debian source package and building the binary packages
+for hello version 2.10, we only saved the outcomes in the respective package
+dataset. We did not register the package dataset update in the distribution
+dataset. This missing step is the equivalent of authorizing and accepting a
+package upload to a distribution in a centralized system.
+
+So although there is an update of a package dataset, it will not be considered
+for inclusion into the APT archive without formally registering the update
+in the distribution. This is done by saving the package datasets state in
+the distribution dataset
+
+.. code-block:: bash
+
+   cd ../bullseye
+   datalad save -m "Accept hello 2.10 build for amd64"
+
+Rerunning ``deb-update-reprepro-repository`` now does detect the package
+update, automatically discovers the addition of the source package, and the
+recently built binary packages, and ingest them both into the APT archive
+dataset.
+
+.. code-block:: bash
+
+   datalad deb-update-reprepro-repository
+
+After ``reprepro`` generated all updates to the archive, DataLad captures all
+those changes and links all associated inputs and outputs of this process
+in a clean dataset hierarchy. We can confirm this with ``datalad status``,
+and ``git log -2`` shows the provenance information for the two internal
+``reprepro`` runs involved in this APT archive update.
+
+After the update, the working tree content of the archive dataset looks like
+this::
+
+  apt/
+  ├── conf/
+  │   ├── distributions
+  │   └── options
+  ├── db/
+  │   ├── checksums.db
+  │   ├── contents.cache.db
+  │   ├── packages.db
+  │   ├── references.db
+  │   ├── release.caches.db
+  │   └── version
+  ├── distributions/
+  │   ├── bullseye/
+  │   │   ├── builder/
+  │   │   └── packages/
+  │   │       └── hello/
+  │   │           ├── builder/
+  │   │           ├── hello_2.10-2_amd64.buildinfo
+  │   │           ├── hello_2.10-2_amd64.changes
+  │   │           ├── hello_2.10-2_amd64.deb
+  │   │           ├── hello_2.10-2.debian.tar.xz
+  │   │           ├── hello_2.10-2.dsc
+  │   │           ├── hello_2.10.orig.tar.gz
+  │   │           ├── hello-dbgsym_2.10-2_amd64.deb
+  │   │           └── logs/
+  │   │               └── hello_2.10-2_20220714T073633_amd64.txt
+  │   └── README
+  ├── README
+  └── www/
+      ├── dists/
+      │   └── bullseye/
+      │       ├── main/
+      │       │   ├── binary-amd64/
+      │       │   │   ├── Packages
+      │       │   │   ├── Packages.gz
+      │       │   │   └── Release
+      │       │   └── source/
+      │       │       ├── Release
+      │       │       └── Sources.gz
+      │       └── Release
+      └── pool/
+          └── main/
+              └── h/
+                  └── hello/
+                      ├── hello_2.10-2_amd64.deb
+                      ├── hello_2.10-2.debian.tar.xz
+                      ├── hello_2.10-2.dsc
+                      ├── hello_2.10.orig.tar.gz
+                      └── hello-dbgsym_2.10-2_amd64.deb
 
 
+All added files in the archive dataset are managed by ``git-annex``, meaning
+only their file identity (checksum) is tracked with Git, not their large
+content. The files in ``db//`` are required for ``reprepro`` to run properly
+on subsequent updates. A dedicated configuration keeps them in an "unlocked"
+state for interoperability with ``reprepro``. All other files are technically
+symlinks into the file content "annex" operated by ``git-annex``.
+
+A webserver can expose the ``www/`` directory as a fully functional APT
+archive. However, ``www/`` is actually a dedicated DataLad (sub)dataset, which
+can also be cloned to a different location, and updates can be propagated to it
+via ``datalad update`` at any desired interval.
+
+Moreover, the ``www/`` subdataset can also be checked-out at any captured archive
+update state (e.g. its state on a particular). This makes it possible to
+provide any snapshot of the entire APT archive in a format that is immediately
+accessible to any ``apt`` client.
+
+In between archive dataset updates, it is not necessary to keep the distribution
+and package datasets around. TO avoid accumulation of disk space demands,
+these can be dropped:
+
+.. code-block:: bash
+
+   datalad drop -d . --what all -r distributions
+
+Dropping is a safe operation. DataLad verifies that all file content and the
+checked-out dataset state remains available from other clones when the local
+clones are removed. The next run of ``deb-update-reprepro-repository`` will
+re-obtain any necessary datasets automatically.
+
+The archive dataset can now be maintained for as long as desired, by repeated
+the steps for updating package datasets, registering these updates in their
+distribution datasets, and running ``deb-update-reprepro-repository`` to ingest
+the updates in the APT archive.
