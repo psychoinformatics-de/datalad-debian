@@ -87,7 +87,7 @@ building packages. The generated container image is registered in the
 single executable that takes a Debian source package as input and builds
 Debian binary packages in its environment as output.
 
-With the builder prepared, we can safe the resulting state of the builder
+With the builder prepared, we can save the resulting state of the builder
 in the ``distribution`` dataset.
 
 .. code-block:: bash
@@ -108,7 +108,7 @@ in the ``distribution`` dataset.
 Running ``datalad status`` or ``git status`` in the distribution dataset now
 confirms that all components are comprehensively tracked. Inspecting the
 commits of the two created datasets, and in particular those of the ``builder``
-dataset, reveals how DataLad capture the exact process of the build environment
+dataset, reveals how DataLad captures the exact process of the build environment
 generation.
 
 
@@ -187,7 +187,7 @@ linking the build inputs with the generated artifacts (again check
 ``git show`` for more information).
 
 If desired, ``deb-build-package`` can automatically update the builder dataset
-prior a build. Otherwise the build is done using whatever builder environment
+prior to a build. Otherwise the build is done using whatever builder environment
 is registered in the dataset, for example, to re-build historical versions of
 a dataset with the respective historical build environment version.
 
@@ -202,9 +202,9 @@ Create an archive dataset
 With Debian source and binary packages organized in distribution and package
 datasets, the remaining step is to generate a package archive that APT can use
 to retrieve and install Debian packages from. A dedicated tool that can do this
-is ``reprepro``, and is also the main work horse here. By applying the
+is ``reprepro``, and is also the main work horse here. Applying the
 previously used patterns of dataset nesting to tracking inputs, and capturing
-the provenance of tool execution, when will use ``reprepro`` to ingest packages
+the provenance of tool execution, we will use ``reprepro`` to ingest packages
 from our distribution dataset into an APT package archive.
 
 The first step is to create the archive DataLad dataset:
@@ -216,7 +216,7 @@ The first step is to create the archive DataLad dataset:
    datalad deb-new-reprepro-repository apt
    cd apt
 
-We give it the name ``apt``, but this is only the name of the directory, the
+We give it the name ``apt``, but this is only the name of the directory the
 dataset is created in.
 
 ::
@@ -243,7 +243,7 @@ could be::
 
 A real-world configuration would be a little more complex, and typically
 list a key to sign the archive with, etc. Once we completed the
-configuration, we can safe the archive dataset:
+configuration, we can save the archive dataset:
 
 .. code-block:: bash
 
@@ -279,7 +279,7 @@ root directory of the walk-through demo.
 
 As we can see, the archive dataset now links the distribution dataset,
 and also its package dataset, in a consistent, version tree (confirm
-clean dataset state with ``datalad status``.
+clean dataset state with ``datalad status``).
 
 
 Ingest Debian package into an archive dataset
@@ -289,7 +289,7 @@ With all information tracked in DataLad dataset, we can automatically
 determine which packages have been added and built in any linked
 distribution since the last archive update -- without having to
 operate a separate upload queue. This automatic queue generation and
-processing it performed by the ``deb-update-reprepro-repository``
+processing is performed by the ``deb-update-reprepro-repository``
 command.
 
 .. code-block:: bash
@@ -389,7 +389,7 @@ this::
 
 All added files in the archive dataset are managed by ``git-annex``, meaning
 only their file identity (checksum) is tracked with Git, not their large
-content. The files in ``db//`` are required for ``reprepro`` to run properly
+content. The files in ``db/`` are required for ``reprepro`` to run properly
 on subsequent updates. A dedicated configuration keeps them in an "unlocked"
 state for interoperability with ``reprepro``. All other files are technically
 symlinks into the file content "annex" operated by ``git-annex``.
@@ -405,7 +405,7 @@ provide any snapshot of the entire APT archive in a format that is immediately
 accessible to any ``apt`` client.
 
 In between archive dataset updates, it is not necessary to keep the distribution
-and package datasets around. TO avoid accumulation of disk space demands,
+and package datasets around. To avoid accumulation of disk space demands,
 these can be dropped:
 
 .. code-block:: bash
