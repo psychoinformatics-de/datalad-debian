@@ -120,6 +120,7 @@ class BootstrapBuilder(Interface):
             '--containall ' \
             '--writable ' \
             '--no-home ' \
+            '--workdir {{tmpdir}} ' \
             '{img} {cmd}'
 
         # this is a fresh addition of the build env
