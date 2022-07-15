@@ -15,20 +15,20 @@ Create a distribution dataset
 =============================
 
 A distribution dataset is a DataLad superdataset that contains all necessary
-components to build Debian packages for a particular distribution release.
-This includes the packages' source code, and a build environment.
+components to build Debian packages for a particular Debian release.
+These include the packages' source code, and a build environment.
 
-To create a collection of packages for a particular distribution (e.g. Debian
-11, bullseye), start by creating a ``distribution`` dataset.
+To create a collection of packages, i.e. a distribution, start by creating
+a ``distribution`` dataset.
 
 .. code-block:: bash
 
-   datalad deb-new-distribution bullseye
-   cd bullseye
+   datalad deb-new-distribution our-distribution
+   cd our-distribution
 
-This creates the ``distribution`` dataset "bullseye". Despite the name, the
+This creates the ``distribution`` dataset "our-distribution". The
 generated dataset is still pretty generic, and not anyhow tailored to a
-particular distribution yet.
+particular Debian release yet.
 
 Besides the distribution superdataset, a ``builder`` subdataset was created too.
 It contains the subdirectories:
@@ -41,7 +41,7 @@ It contains the subdirectories:
 
 ::
 
-   bullseye
+   our-distribution
    └── builder
         ├── envs
         │   └── README.md
@@ -52,9 +52,9 @@ Configure and create a package builder
 ======================================
 
 Before we can start building Debian packages, the ``builder`` subdataset must
-be configured to provide one or more build environments for the respective
-distribution and target CPU architecture. Start by configuring the builder for
-the specific distribution release.
+be configured to provide one or more build environments for the targeted
+Debian release and the target CPU architecture. Start by configuring the builder
+for the specific Debian release, e.g. for "bullseye".
 
 .. code-block:: bash
 
@@ -62,7 +62,7 @@ the specific distribution release.
 
 This creates a singularity container recipe for a Debian bullseye environment
 based on a default template. Check the documentation of `deb-configure-builder`
-for additonal configuration options, for example to enable `non-free` package
+for additional configuration options, for example to enable `non-free` package
 sources.
 
 The command ``deb-bootstrap-builder`` can now be run to bootstrap the
@@ -73,11 +73,11 @@ The command ``deb-bootstrap-builder`` can now be run to bootstrap the
    datalad deb-bootstrap-builder --dataset builder
 
 The ``builder`` dataset now contains a container image that can be used for
-building packages. Using singularity, the entire container acts as a single
-executable that takes a Debian source package as input and builds Debian binary
-packages in its environment as output. The generated container image is
-registered in the ``builder`` dataset for use by the datalad-container
-extension and its ``containers-run`` command.
+building packages. The generated container image is registered in the
+``builder`` dataset for use by the datalad-container extension and its
+``containers-run`` command. Using singularity, the entire container acts as a
+single executable that takes a Debian source package as input and builds
+Debian binary packages in its environment as output.
 
 With the builder prepared, we can safe the resulting state of the builder
 in the ``distribution`` dataset.
@@ -88,7 +88,7 @@ in the ``distribution`` dataset.
 
 ::
 
-   bullseye
+   our-distribution
    └── builder
         ├── envs
         │   ├── README.md
@@ -115,7 +115,7 @@ To add a package, start by creating a new ``package`` dataset inside of the
    datalad deb-new-package hello
 
 This creates a new ``package`` subdataset for a source package with the name
-``hello`` under the ``packages`` subdirectory of the ``distrubtion`` dataset.
+``hello`` under the ``packages`` subdirectory of the ``distribution`` dataset.
 Inspecting the created dataset, we can see another ``builder`` subdataset.  In
 fact, this is the ``builder`` dataset of the distribution, linked via DataLad's
 dataset nesting capability.
@@ -123,7 +123,7 @@ dataset nesting capability.
 This link serves a dual purpose. 1) It records which exact version of the
 builder was used for building particular versions of a given source package,
 and 2) it provides a canonical reference for updating to newer versions of the
-distribution's builder, for example, after a distribution point release.
+distribution's builder, for example, after a Debian point release.
 
 The package dataset can now be populated with a Debian source package version.
 In the simplest case, a source package is merely placed into the dataset and
@@ -137,7 +137,7 @@ repository can be attached as a subdataset, at the exact version needed, and
 full detail of the source package generation.
 
 For this walk-through, we download version 2.10 of the ``hello`` package from
-snapshot.debian.org:
+``snapshot.debian.org``:
 
 .. code-block:: bash
 
@@ -160,23 +160,23 @@ the package dataset is placed inside a clone of the distribution dataset, this
 particular constellation is not required. Building package is possible and support
 in any (isolated) clone of the package dataset.
 
-To build Debian binary packages we can use the ``deb-build-package`` command
+To build Debian binary packages we can use DataLad's ``deb-build-package`` command
 parametrized with the source package's DSC filename.
 
 .. code-block:: bash
 
    datalad deb-build-package hello_2.10-2.dsc
 
-As with the download before, DataLad will capture of the full provenance of the
+As with the download before, DataLad will capture the full provenance of the
 package build. The command will compose a call to ``datalad containers-run`` to
-pass the source package on to the builder in the builder dataset. Both this
+pass the source package on to the builder in the ``builder`` subdataset. Both this
 builder dataset, and the actual singularity image with the containerized build
 environment is automatically obtained. This is possible, because the package
 dataset exhaustively captures all information on source code to build, and
-environment to build it in. Built binary packages, metadata files, and build logs
-are captured in a new saved package dataset state -- precisely linking the
-build inputs with the generated artifacts (again check ``git show`` for more
-information).
+on the environment to build it in. Built binary packages, metadata files, and
+build logs are captured in a new saved package dataset state -- precisely
+linking the build inputs with the generated artifacts (again check
+``git show`` for more information).
 
 If desired, ``deb-build-package`` can automatically update the builder dataset
 prior a build. Otherwise the build is done using whatever builder environment
