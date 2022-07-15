@@ -122,6 +122,7 @@ class UpdateRepreproRepository(Interface):
 
 
 def _get_updates_from_dist(ds, dist_ds, ref):
+    lgr.debug('Updating from %s', dist_ds.pathobj.relative_to(ds.pathobj))
     updated_pkg_datasets = [
         # we must use `ds` again to keep the validity of `ref`
         pkg_ds for pkg_ds in ds.diff(
