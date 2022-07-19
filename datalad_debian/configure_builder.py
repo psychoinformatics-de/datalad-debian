@@ -15,6 +15,7 @@ from datalad.interface.utils import (
     eval_results,
 )
 from datalad.support.constraints import (
+    EnsureChoice,
     EnsureNone,
     EnsureStr,
 )
@@ -48,7 +49,7 @@ class ConfigureBuilder(Interface):
         |    │   │   └──  README.md
         |    │   └── recipes
         |    │       ├── README.md
-        |    │       └── singularity-any     <- builder configuration
+        |    │       └── singularity-default-any     <- builder configuration
 
     Currently supported templates are
 
@@ -81,6 +82,18 @@ class ConfigureBuilder(Interface):
             doc="""Builder recipe template. This is a text file for placeholders
             in Python string formating syntax""",
             constraints=EnsureStr() | EnsureNone()),
+        cfgtype=Parameter(
+            args=('--cfgtype',),
+            default='singularity',
+            doc="""Type of build environment. Currently supported: 'singularity'
+            """,
+            constraints=EnsureChoice('singularity')),
+        cfgarch=Parameter(
+            args=('--cfgarch',),
+            default='any',
+            doc="""Type of architecture supported by the build environment.
+            Currently supported: 'any'""",
+            constraints=EnsureChoice('any')),
         spec=Parameter(
             args=('spec',),
             metavar='property=value',
@@ -93,22 +106,24 @@ class ConfigureBuilder(Interface):
                   "subdataset, executed from a distribution superdataset",
              code_cmd="datalad deb-configure-builder -d builder dockerbase=debian:bullseye",
              code_py="deb_configure_builder(dataset='builder', "
-                     "spec={'dockerbase':'debian:bullseye'})")
+                     "spec={'dockerbase':'debian:bullseye'})"),
+        dict(text="Configure the nonfree Singularity recipe in the builder "
+                  "subdataset, executed from a distribution superdataset",
+             code_cmd="datalad deb-configure-builder -d builder --template "
+                      "nonfree dockerbase=debian:bullseye",
+             code_py="deb_configure_builder(dataset='builder', "
+                     "template='nonfree' spec={'dockerbase':'debian:bullseye'})"
+             ),
+
     ]
 
     @staticmethod
     @datasetmethod(name='deb_configure_builder')
     @eval_results
     def __call__(*, dataset=None, force=False,
-                 template='default', spec=None,
-    ):
-        # TODO this could later by promoted to an option to support more than
-        # singularity
-        cfgtype = 'singularity'
-
-        # TODO could later be promoted to an option to support
-        # CPU architecture-specific configuration
-        cfgarch = 'any'
+                 template='default', cfgtype='singularity',
+                 cfgarch='any', spec=None,
+                 ):
 
         builder_ds = require_dataset(dataset)
 
@@ -132,22 +147,19 @@ class ConfigureBuilder(Interface):
             if tp.exists():
                 tmpl_path = tp
                 break
-
         if tmpl_path is None:
             raise ValueError(
                 f'Cannot locate builder configuration template {template!r}')
-
-        template = tmpl_path.read_text()
-
+        tmpl = tmpl_path.read_text()
         try:
-            builder_config = template.format(**spec)
+            builder_config = tmpl.format(**spec)
         except KeyError as e:
             raise ValueError(
                 "Missing value for builder configuration template "
                 f"instantiation: {e}"
             ) from e
 
-        cfg_path = builder_ds.pathobj / 'recipes' / f'{cfgtype}-{cfgarch}'
+        cfg_path = builder_ds.pathobj / 'recipes' / f'{cfgtype}-{template}-{cfgarch}'
         cfg_path.write_text(builder_config)
         yield from builder_ds.save(
             cfg_path,

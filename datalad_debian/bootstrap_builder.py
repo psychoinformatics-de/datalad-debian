@@ -18,7 +18,9 @@ from datalad.runner import (
     StdOutCapture,
 )
 from datalad.support.constraints import (
+    EnsureChoice,
     EnsureNone,
+    EnsureStr,
 )
 from datalad.support.param import Parameter
 
@@ -32,6 +34,11 @@ class BootstrapBuilder(Interface):
     This command bootstraps a (containerized) build environment (such as a
     Singularity container) based on an existing builder configuration (such as
     a Singularity recipe).
+    If there are multiple builder configurations, the command will by default
+    look for and bootstrap 'singularity-default-any' and
+    'singularity-default-<arch-of-the-system>'. Alternative configurations
+    can be specified using the cfgtype and template parameters, which will be
+    combined into '{cfgtype}-{template}-<arch-of-the-system>'.
 
     The execution of this command might require administrative privileges and
     could prompt for a sudo password, for example to build a
@@ -45,10 +52,10 @@ class BootstrapBuilder(Interface):
         |    ├── builder             <- builder subdataset
         |    │   ├── envs
         |    │   │   ├── README.md
-        |    │   │   └── singularity-amd64.sif   <- bootstrapped build environment
+        |    │   │   └── singularity-default-amd64.sif   <- bootstrapped build environment
         |    │   └── recipes
         |    │       ├── README.md
-        |    │       └── singularity-any     <- builder configuration
+        |    │       └── singularity-default-any     <- builder configuration
 
     """
 
@@ -58,22 +65,40 @@ class BootstrapBuilder(Interface):
             doc="""specify a builder dataset that contains a build environment
             configuration""",
             constraints=EnsureDataset() | EnsureNone()),
+        template=Parameter(
+            args=('--template',),
+            metavar='PATH',
+            doc="""Template name of the relevant build environment. This value
+            will be used to find the right build environment for the package in
+            conjunction with cfgtype and the system's architecture""",
+            constraints=EnsureStr() | EnsureNone()),
+        cfgtype=Parameter(
+            args=('--cfgtype',),
+            default='singularity',
+            doc="""Type of relevant build environment. This value will be used
+            to find the right build environment for the package in conjunction
+            with template and the system's architecture. Currently supported:
+            'singularity'""",
+            constraints=EnsureChoice('singularity')),
     )
 
     _examples_ = [
         dict(text="Bootstrap a configured build environment in a builder "
                   "subdataset, from a distribution dataset",
              code_cmd="datalad deb-bootstrap-builder -d builder",
-             code_py="deb_bootstrap_builder(dataset='builder')")
+             code_py="deb_bootstrap_builder(dataset='builder')"),
+        dict(text="Bootstrap a configured nonfree build environment in a "
+                  "builder subdataset, from a distribution dataset",
+             code_cmd="datalad deb-bootstrap-builder --template nonfree "
+                      "-d builder",
+             code_py="deb_bootstrap_builder(dataset='builder', "
+                     "template='nonfree')")
     ]
 
     @staticmethod
     @datasetmethod(name='deb_bootstrap_builder')
     @eval_results
-    def __call__(*, dataset=None):
-        # TODO this could later by promoted to an option to support more than
-        # singularity
-        cfgtype = 'singularity'
+    def __call__(*, dataset=None, cfgtype='singularity', template='default'):
 
         builder_ds = require_dataset(dataset)
 
@@ -82,26 +107,33 @@ class BootstrapBuilder(Interface):
             ['dpkg-architecture', '-q', 'DEB_BUILD_ARCH'],
             protocol=StdOutCapture)['stdout'].strip()
 
-        buildenv_name = f"{cfgtype}-{binarch}"
+        buildenv_name = f"{cfgtype}-{template}-{binarch}"
 
         recipe = None
-        for p in (builder_ds.pathobj / 'recipes' / f"{cfgtype}-{binarch}",
-                  builder_ds.pathobj / 'recipes' / f"{cfgtype}-any"):
+        for p in (builder_ds.pathobj / 'recipes' / f"{cfgtype}-{template}-{binarch}",
+                  builder_ds.pathobj / 'recipes' / f"{cfgtype}-{template}-any"):
             if p.exists():
                 recipe = p
                 break
         if recipe is None:
             raise RuntimeError(
                 "Cannot locate build environment recipe for "
-                f"{cfgtype}({binarch})")
-
+                f"{cfgtype}-{template}({binarch})")
+        # define extensions of environment names and to-be-executed bootstrap
+        # command based on specified cfgtype
+        if cfgtype == 'singularity':
+            ext = 'sif'
+            # TODO allow for other means of privilege escalation
+            cmd = 'sudo singularity build --force {outputs} {inputs}'
         # TODO allow for other types of environments
-        buildenv = Path('envs', f"{buildenv_name}.sif")
+        else:
+            raise NotImplementedError("No known extension and bootstrapping"
+                                      "command for configuration of type %s"
+                                      % cfgtype)
+        buildenv = Path('envs', f"{buildenv_name}.{ext}")
 
         yield from builder_ds.run(
-            # TODO allow for other means of privilege escalation
-            # TODO allow for other means to bootstrap
-            "sudo singularity build --force {outputs} {inputs}",
+            cmd,
             inputs=[str(recipe.relative_to(builder_ds.pathobj))],
             outputs=[str(buildenv)],
             message=f"Bootstrap builder '{buildenv_name}'",

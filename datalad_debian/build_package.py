@@ -14,6 +14,7 @@ from datalad.interface.utils import (
     eval_results,
 )
 from datalad.support.constraints import (
+    EnsureChoice,
     EnsureNone,
     EnsureStr,
 )
@@ -35,6 +36,10 @@ class BuildPackage(Interface):
     The command relies on a (containerized) build environment within a package's
     'builder' subdataset. The 'builder' subdataset can optionally be updated
     beforehand.
+    If the builder/ subdataset contains several build environments, by default
+    'singularity-default-<arch-of-the-system>.sif' will be used. Alternative
+    environments can be specified using the cfgtype and template parameters
+    which will be combined to '{cfgtype}-{template}-<arch-of-the-system>'.
 
     Beyond binary .deb files, this command creates a .changes, a .buildinfo,
     and a logs/.txt file with build metadata and provenance. All resulting
@@ -55,6 +60,21 @@ class BuildPackage(Interface):
             doc="""Update the builder subdataset from its origin before package
             build""",
             action='store_true'),
+        template=Parameter(
+            args=('--template',),
+            metavar='PATH',
+            doc="""Template name of the relevant build environment. This value
+            will be used to find the right build environment for the package in
+            conjunction with cfgtype and the system's architecture""",
+            constraints=EnsureStr() | EnsureNone()),
+        cfgtype=Parameter(
+            args=('--cfgtype',),
+            default='singularity',
+            doc="""Type of relevant build environment. This value will be used
+            to find the right build environment for the package in conjunction
+            with template and the system's architecture. Currently supported:
+            'singularity'""",
+            constraints=EnsureChoice('singularity')),
     )
 
     _examples_ = [
@@ -62,13 +82,19 @@ class BuildPackage(Interface):
                   "file",
              code_cmd="datalad deb-build-package hello_2.10-2.dsc",
              code_py="deb_build_package('hello_2.10-2.dsc')"
-        )
+        ),
+        dict(text="Build a binary package from a Debian package's source .dsc "
+                  "file with an environment suitable for nonfree packages",
+             code_cmd="datalad deb-build-package hello_2.10-2.dsc",
+             code_py="deb_build_package('hello_2.10-2.dsc') --template nonfree"
+             )
     ]
 
     @staticmethod
     @datasetmethod(name='deb_build_package')
     @eval_results
-    def __call__(dsc, *, dataset=None, update_builder=False):
+    def __call__(dsc, *, dataset=None, update_builder=False,
+                 cfgtype='singularity', template='default'):
         dsc = Path(dsc)
 
         pkg_ds = require_dataset(dataset)
@@ -94,16 +120,12 @@ class BuildPackage(Interface):
                 protocol=StdOutCapture)['stdout'].strip().split('\n')
         ]
 
-        # TODO this could later by promoted to an option to support more than
-        # singularity
-        cfgtype = 'singularity'
-
         # figure out which architecture we will be building for
         binarch = Runner().run(
             ['dpkg-architecture', '-q', 'DEB_BUILD_ARCH'],
             protocol=StdOutCapture)['stdout'].strip()
 
-        buildenv_name = f"{cfgtype}-{binarch}"
+        buildenv_name = f"{cfgtype}-{template}-{binarch}"
 
         # needed, even when no `update_builder` is intended because we want to
         # establish a cache dir inside the build dataset
@@ -161,10 +183,11 @@ class BuildPackage(Interface):
             yield dict(
                 action='deb_build_package',
                 status='impossible',
-                path='pkg_ds',
+                path=pkg_ds,
                 message=(
                     "Couldn't find the required builder container %s. Forgot to "
-                    "bootrap it?", cname
+                    "bootrap it, or supply non-default template/cfgtype name?",
+                    cname
                 )
 
             )
