@@ -35,7 +35,9 @@ such as `reprepro <https://salsa.debian.org/brlink/reprepro>`__, or
 `dpkg <https://www.dpkg.org>`__
 
 To get a feel for this machinery, see the :ref:`walk-through
-<chap_walkthrough>`.
+<chap_walkthrough>`. If that sparks your interest, continue with the
+:ref:`walk-through on collaborative package distribution
+<chap_walkthrough_collab>` for a more conceptual illustration.
 
 
 Overview
@@ -46,6 +48,7 @@ Overview
 
    concepts
    walkthrough
+   walkthrough_collab
 
 
 Commands and API
