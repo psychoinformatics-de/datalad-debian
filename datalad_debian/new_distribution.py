@@ -77,6 +77,9 @@ class NewDistribution(Interface):
                 dataset=dataset,
                 path=path,
                 force=force,
+                # a distribution dataset is just a container for
+                # (package) subdatasets
+                annex=False,
                 # critical, otherwise create() throws any errors away
                 # https://github.com/datalad/datalad/issues/6695
                 result_filter=None,
