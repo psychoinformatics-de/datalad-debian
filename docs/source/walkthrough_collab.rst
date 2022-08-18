@@ -40,7 +40,7 @@ are used for package building and distribution/archive maintenance with
 
 - **archive dataset**: DataLad dataset that tracks an *APT-repository dataset*,
   and any number of *distribution datasets* used to populate the APT-repository
-  (presently with the `reprepro` tool).
+  (presently with the `reprepro <https://salsa.debian.org/brlink/reprepro>`_ tool).
 
 
 Roles
@@ -57,7 +57,7 @@ of required access permissions.
 
 - **distribution maintainer**: Reviews and accepts/rejects new or updated
   *package datasets* (updated by a *package maintainer* or a *package
-  builders*) by incorporating them into a *distribution dataset*. Needs read
+  builder*) by incorporating them into a *distribution dataset*. Needs read
   access to any *package dataset* and write access to a (particular)
   *distribution dataset*.
 
@@ -96,7 +96,7 @@ compartmentalization.
 - **APT-repository dataset checkout**: This location is typically exposed via a
   web-server and the APT client facing end of the system. In addition to being
   used by APT for its normal operation, it can also be (git/datalad) cloned
-  from (including historic version), and is capable of hosting and providing
+  from (including historic versions), and is capable of hosting and providing
   previous versions of any repository content in a debian-snapshot like
   fashion. Only *archive maintainer* need write access, while read access
   is typically "public" or anonymous.
@@ -116,7 +116,7 @@ compartmentalization.
 
 - **Hosting of package datasets**: *Package maintainers* need to deposit source
   and binary package files in a way that enables *package builders* and
-  *archive maintainers* to retrieve them. Any datalad-supported sibling type can
+  *archive maintainers* to retrieve them. Any DataLad-supported sibling type can
   be used, including git-annex aware systems like GIN or RIA-stores, or dual
   hosting approaches with a Git-hoster for the dataset and a (cloud) storage
   solution for file content.
@@ -227,7 +227,7 @@ APT-archives even a clone may take considerable time. Hence we are create the
 archive dataset in the location where is would/could live semi-persistently.
 
 We add our *distribution dataset* from the collaboration-focused dataset store
-(GitLab placeholder). The need not live on the same machine. Any source URL
+(GitLab placeholder). They need not live on the same machine. Any source URL
 that DataLad supports is suitable. The *distribution dataset* clone inside
 the *archive dataset* need not stay there permanently, but can be dropped and
 reobtained as needed.
@@ -304,7 +304,7 @@ Here we clone via SSH to indicate that this could be performed anywhere.
 A key task of updating a *package dataset* is adding a new source package version.
 This can involve arbitrary procedures. Here we simply download a ready-made
 source package from Debian. Alternatively, a source package could be generated
-via `git-buildpackage` from a linked packaging repo, or something equivalent.
+via `git-buildpackage <https://honk.sigxcpu.org/projects/git-buildpackage/manual-html/>`_ from a linked packaging repo, or something equivalent.
 
 .. code-block:: bash
 
