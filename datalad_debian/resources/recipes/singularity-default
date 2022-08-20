@@ -1,6 +1,13 @@
 Bootstrap:docker
 From:{dockerbase}
 
+%setup
+# ingest any initialization files deposited in 'init/'
+# (intentionally not using `cp -L` to be able to
+#  deposit symlinks)
+[ -d init ] && cp -rv init/* ${{SINGULARITY_ROOTFS}}/
+
+
 %post
 
 sed -i 's,main,{debian_archive_sections},g' /etc/apt/sources.list
@@ -44,6 +51,9 @@ echo -e "\n#\n# Build starting: \$(date -u --iso-8601=seconds)\n#\n"
 echo -e "\n#\n# Deposit build results: \$(date -u --iso-8601=seconds)\n#\n"
 dcmd cp /tmp/build/*changes /pkg
 EOT
+
+# look for any finalizer executables and run them
+[ -d /finalize ] && (for finalizer in /finalize/*; do ".${{finalizer}}"; done) || true
 
 
 %runscript

@@ -42,13 +42,17 @@ class ConfigureBuilder(Interface):
     The following directory tree illustrates this.
     The configured builder takes the form of a Singularity recipe here.
 
-        | bullseye                <- distribution dataset
-        |    ├── builder             <- builder subdataset
+        | bullseye/                          <- distribution dataset
+        |    ├── builder                     <- builder subdataset
         |    │   ├── envs
-        |    │   │   └──  README.md
-        |    │   └── recipes
-        |    │       ├── README.md
-        |    │       └── singularity-any     <- builder configuration
+        |    │   │   └── README.md
+        |    │   ├── recipes
+        |    │   │   ├── README.md
+        |    │   │   └── singularity-any     <- builder configuration
+        |    │   ├── init                    <- additional builder content
+        |    │   │   ├── README.md
+        |    │   │   ├── finalize/           <- post-processing executables
+        |    │   │   └── ...
 
     Currently supported templates are
 
@@ -62,6 +66,18 @@ class ConfigureBuilder(Interface):
       Debian package archive to enable for APT in the build environment.
       To enable all sections set to 'main contrib non-free'.
       Default: 'main'
+
+    Any files placed in ``init/`` will be copied into the build environment
+    when it is being bootstrapped, right after the base operating system was
+    installed. This can be used to, for example, configure additional
+    APT sources, by placing a ``sources.list`` file into
+    ``init/etc/apt/sources.list.d/...``, and a corresponding GPG key into
+    ``init/usr/share/keyrings/...``.
+
+    Any executables placed into ``init/finalize/`` will be executed at the
+    very end of the bootstrapping process. A finalizer (script) could be used
+    to adjust file permissions, or make arbitrary other modifications without
+    having to adjust the environment recipe directly.
     """
 
     _params_ = dict(
