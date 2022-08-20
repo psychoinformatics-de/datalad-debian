@@ -128,9 +128,16 @@ class NewDistribution(Interface):
 
                 for f, c in (
                         (builder_ds.pathobj / 'recipes' / 'README.md',
-                         "This directory contains the recipes for all build pipeline images."),
+                         "This directory contains the recipes for all build"
+                         "pipeline images.\n"),
                         (builder_ds.pathobj / 'envs' / 'README.md',
-                         "This directory contains build pipeline images."),
+                         "This directory contains build pipeline images.\n"),
+                        (builder_ds.pathobj / 'init' / 'README.md',
+                         "Anything in this directory is copied\n"
+                         "into the root of the build environment.\n"
+                         "Executables placed into `/finalize` inside the\n"
+                         "build environment are ran at the very end of\n"
+                         "the bootstrapping process.\n"),
                 ):
                     if not f.exists():
                         f.parent.mkdir(exist_ok=True)
@@ -140,6 +147,10 @@ class NewDistribution(Interface):
                 for f, a in (
                         # all recipes go into Git
                         (repo.pathobj / 'recipes' / '.gitattributes',
+                         [('*', {'annex.largefiles': 'nothing'})]),
+                        # we might want to save these in unlocked state
+                        # but for now simply put them in git
+                        (repo.pathobj / 'init' / '.gitattributes',
                          [('*', {'annex.largefiles': 'nothing'})]),
                         (repo.pathobj / 'envs' / '.gitattributes',
                          [('*.md', {'annex.largefiles': 'nothing'})]),
