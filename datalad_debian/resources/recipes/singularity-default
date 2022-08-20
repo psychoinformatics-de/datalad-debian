@@ -50,6 +50,12 @@ EOT
 #!/bin/bash
 
 set -e -u
+
+# singularity will (likely) try to provide the hosts timezone in the container
+# but this would prevent certain upgrade scenarios (e.g., a tzdata update), so
+# undo this
+umount /usr/share/zoneinfo/Etc/UTC || true
+
 dsc=$1
 # ISO-like timestamp, but more compact
 ts=$(date --utc --iso-8601=seconds | cut -d '+' -f 1 | tr -d ':-')
