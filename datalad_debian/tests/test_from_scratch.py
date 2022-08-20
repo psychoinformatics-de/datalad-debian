@@ -22,7 +22,7 @@ def test_from_scratch(wdir=None):
         path='builder',
         set_property=[('url', str(dist.pathobj / 'builder'))])
     builder = Dataset(dist.pathobj / 'builder')
-    builder.deb_configure_builder(spec={'dockerbase': 'debian:bullseye'})
+    builder.deb_configure_builder(spec={'dockerbase': 'debian:bullseye-slim'})
     builder.deb_bootstrap_builder()
     dist.save(path='builder', message="Update distribution builder")
     dist.deb_new_package('hello')
