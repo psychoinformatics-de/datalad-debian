@@ -41,7 +41,11 @@ class AddDistribution(Interface):
             args=('name',),
             metavar='NAME',
             doc="""name to add the distribution dataset under
-            (directory distributions/<name>)""",
+            (directory distributions/<name>). The name should equal the
+            codename of a configured distribution in the archive. If multiple
+            distribution datasets shall target the same distribution, their
+            name can append a '-<flavor-label>' suffix to the distribution
+            codename.""",
             constraints=EnsureStr() | EnsureNone()),
     )
 

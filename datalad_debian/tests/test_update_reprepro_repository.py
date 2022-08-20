@@ -64,7 +64,7 @@ Architectures: source amd64
     deb_add_distribution(
         dataset=archive_ds_p,
         source=str(dist_ds_p),
-        name='bullseye',
+        name='bullseye-schnappeldibappeldizupf',
         **ckwa
     )
     deb_update_reprepro_repository(dataset=archive_ds_p, **ckwa)
@@ -97,7 +97,7 @@ Architectures: source amd64
         action='update_repository.includedsc',
         path=str(archive_ds_p),
         type='dataset',
-        dsc=str(archive_ds_p / 'distributions' / 'bullseye' /
+        dsc=str(archive_ds_p / 'distributions' / 'bullseye-schnappeldibappeldizupf' /
                 'packages' / 'tqdm' / 'tqdm_4.57.0-2.dsc'),
     )
     # update again, this time only add a deb
@@ -116,7 +116,7 @@ Architectures: source amd64
         action='update_repository.includedeb',
         path=str(archive_ds_p),
         type='dataset',
-        deb=str(archive_ds_p / 'distributions' / 'bullseye' /
+        deb=str(archive_ds_p / 'distributions' / 'bullseye-schnappeldibappeldizupf' /
             'packages' / 'tqdm' / 'python3-tqdm_4.64.0-1_all.deb'),
     )
     assert debinpool.exists()

@@ -140,7 +140,12 @@ def _get_updates_from_dist(ds, dist_ds, ref):
     for up in updated_pkg_datasets:
         yield from _get_updates_from_pkg(
             ds,
-            dist_ds.pathobj.name,
+            # only use the part in front of the first '-'
+            # as the target distribution label.
+            # the full name could be different, when multiple
+            # distribution packages (maybe with different builders)
+            # are all targeting the same distribution in the archive
+            dist_ds.pathobj.name.split('-', maxsplit=1)[0],
             up,
             ref,
         )
