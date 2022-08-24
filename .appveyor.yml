@@ -108,6 +108,7 @@ install:
 build_script:
   - python -m pip install -r requirements-devel.txt
   - python -m pip install .
+  - python -m pip uninstall dataclasses  # TODO: where do dataclasses come from on python3.8? Our packages should not require them!
 
 
 #after_build:

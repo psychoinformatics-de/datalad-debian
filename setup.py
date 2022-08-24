@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import sys
 from setuptools import setup
 import versioneer
 
@@ -12,8 +11,8 @@ cmdclass = versioneer.get_cmdclass()
 cmdclass.update(build_manpage=BuildManPage)
 
 if __name__ == '__main__':
-    setup(name='datalad_debian',
-          version=versioneer.get_version(),
-          cmdclass=cmdclass,
+    setup(
+        name='datalad_debian',
+        version=versioneer.get_version(),
+        cmdclass=cmdclass,
     )
-
