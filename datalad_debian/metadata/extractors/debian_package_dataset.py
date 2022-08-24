@@ -151,7 +151,6 @@ class DebianPackageExtractor(DatasetMetadataExtractor):
             for platform, element_names in binary_names.items():
                 assert platform not in revision_dict["binaries"]
                 revision_dict["binaries"][platform] = binary_infos[platform]
-
         if package_name is not None:
             return ExtractorResult(
                 extractor_version=self.get_version(),
@@ -179,11 +178,14 @@ class DebianPackageExtractor(DatasetMetadataExtractor):
             )
 
     def _get_binary_info(self, path, names):
+        debug_symbols_path = path / names['dbgsym']
         return {
             "deb": f"{names['deb']}: {DebFile(path / names['deb'])}",
-            "dbgsym": f"{names['dbgsym']}: {DebFile(path / names['dbgsym'])}",
             "build_info": f"{names['buildinfo']}: {BuildInfo(open(path / names['buildinfo'], 'rt'))}",
             "changes": f"{names['changes']}: {Changes(open(path / names['changes'], 'rt'))}",
+            **({
+                "dbgsym": f"{names['dbgsym']}: {DebFile(debug_symbols_path)}"
+            } if debug_symbols_path.exists() else {})
         }
 
     def _find_versions(self):
