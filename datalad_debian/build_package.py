@@ -10,6 +10,9 @@ from datalad.interface.base import (
     Interface,
     build_doc,
 )
+from datalad.interface.results import (
+    get_status_dict
+)
 from datalad.interface.utils import (
     eval_results,
 )
@@ -22,6 +25,7 @@ from datalad.runner import (
     StdOutCapture,
 )
 from datalad.support.param import Parameter
+from .utils import result_matches
 
 lgr = logging.getLogger('datalad.debian.build_package')
 
@@ -170,7 +174,8 @@ class BuildPackage(Interface):
             )
             return
 
-        yield from pkg_ds.containers_run(
+        build_log = None
+        for r in pkg_ds.containers_run(
             # needs to go in relative, because it is interpreted inside the
             # (containerized) buildenv
             dsc.relative_to(pkg_ds.pathobj) if dsc.is_absolute() else dsc,
@@ -183,4 +188,20 @@ class BuildPackage(Interface):
             result_renderer='disabled',
             return_type='generator',
             on_failure='ignore',
-        )
+        ):
+            # find the logfile
+            if result_matches(r, **dict(status='ok', action='add', type='file',
+                                        refds=pkg_ds.pathobj.as_posix())) and \
+                    r['path'].startswith(r['refds'] + "/logs"):
+                build_log = r['path']
+            yield r
+
+        if build_log:
+            # check for success marker from singularity runscript
+            lines = Path(build_log).read_text().splitlines()[-3:]
+            if "# datalad-debian: build succeeded" not in lines:
+                yield get_status_dict(
+                    action='deb_build_package',
+                    status='error',
+                    message=f"Build failed. Check {build_log} for details.",
+                    ds=pkg_ds)
