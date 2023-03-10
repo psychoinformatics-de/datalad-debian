@@ -25,6 +25,7 @@ from datalad.runner import (
     StdOutCapture,
 )
 from datalad.support.param import Parameter
+from .utils import result_matches
 
 lgr = logging.getLogger('datalad.debian.build_package')
 
@@ -189,11 +190,9 @@ class BuildPackage(Interface):
             on_failure='ignore',
         ):
             # find the logfile
-            if r['status'] == 'ok' and r['action'] == 'add' \
-                    and r['type'] == 'file' \
-                    and r['refds'] == pkg_ds.pathobj.as_posix() \
-                    and r['path'].startswith(r['refds'] + "/logs"):
-
+            if result_matches(r, **dict(status='ok', action='add', type='file',
+                                        refds=pkg_ds.pathobj.as_posix())) and \
+                    r['path'].startswith(r['refds'] + "/logs"):
                 build_log = r['path']
             yield r
 
