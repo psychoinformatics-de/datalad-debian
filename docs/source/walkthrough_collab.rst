@@ -383,8 +383,8 @@ even whether such a build is reproducible. However, builds are also often done
 by automated systems.
 
 Such a system needs to perform the following steps, in a temporary workspace:
-Clone the package dataset (here we take it from the trusted internal storage
-solution
+first, clone the package dataset (here we take it from the trusted internal
+storage solution).
 
 .. code-block:: bash
 
@@ -412,7 +412,7 @@ Once the build succeeded, the outcome can be pushed and the workspace cleaned up
 
    datalad -C pkg push
    # https://github.com/psychoinformatics-de/datalad-debian/issues/118
-   sudo rm -rf /tmp/wt/pkg/builder/cache
+   sudo rm -rf pkg/builder/cache
    datalad drop --what all -r -d pkg
 
 
